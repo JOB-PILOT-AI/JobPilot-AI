@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
@@ -9,7 +10,8 @@ import { TrendingUp, FileText, Briefcase, Zap, CheckCircle, AlertCircle } from '
 import axios from 'axios'
 
 export default function Dashboard() {
-  const { user } = useAuthStore()
+  const navigate = useNavigate()
+  const { user, token } = useAuthStore()
   const [resume, setResume] = useState(null)
   const [jobMatches, setJobMatches] = useState([])
   const [atsScore, setAtsScore] = useState(0)
@@ -27,7 +29,7 @@ export default function Dashboard() {
     try {
       // Fetch resume
       const resumeRes = await axios.get('/api/resume', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
       })
       if (resumeRes.data.length > 0) {
         setResume(resumeRes.data[0])
@@ -186,7 +188,7 @@ export default function Dashboard() {
                 <div className="text-center py-8">
                   <FileText size={48} className="text-muted mx-auto mb-4 opacity-50" />
                   <p className="text-muted mb-4">No resume uploaded yet</p>
-                  <Button variant="primary" onClick={() => window.location.href = '/resume-builder'}>
+                  <Button variant="primary" onClick={() => navigate('/resume-builder')}>
                     Upload Resume
                   </Button>
                 </div>
@@ -227,7 +229,7 @@ export default function Dashboard() {
                         variant="ghost"
                         size="sm"
                         className="w-full"
-                        onClick={() => window.location.href = `/job/${job._id}`}
+                        onClick={() => navigate(`/job/${job._id}`)}
                       >
                         View Details
                       </Button>
@@ -238,7 +240,7 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   className="w-full mt-4"
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={() => navigate('/dashboard')}
                 >
                   View All Matches
                 </Button>

@@ -3,26 +3,31 @@ import mammoth from 'mammoth'
 
 export const parseResume = async (fileContent, fileType) => {
   let extractedText = ''
+  const buffer = Buffer.isBuffer(fileContent)
+    ? fileContent
+    : typeof fileContent === 'string'
+      ? fileType === 'text/plain'
+        ? Buffer.from(fileContent, 'utf-8')
+        : Buffer.from(fileContent, 'base64')
+      : Buffer.alloc(0)
 
   try {
     if (fileType === 'application/pdf') {
-      const buffer = Buffer.from(fileContent, 'base64')
       const data = await pdfParse(buffer)
       extractedText = data.text
     } else if (
       fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ) {
-      const buffer = Buffer.from(fileContent, 'base64')
       const result = await mammoth.extractRawText({ buffer })
       extractedText = result.value
     } else if (fileType === 'text/plain') {
-      extractedText = Buffer.from(fileContent, 'base64').toString('utf-8')
+      extractedText = buffer.toString('utf-8')
     } else {
-      extractedText = fileContent
+      extractedText = Buffer.isBuffer(fileContent) ? fileContent.toString('utf-8') : fileContent
     }
   } catch (err) {
     console.log('Error parsing file:', err)
-    extractedText = fileContent
+    extractedText = Buffer.isBuffer(fileContent) ? fileContent.toString('utf-8') : fileContent
   }
 
   // Parse extracted text for structured data
@@ -30,6 +35,7 @@ export const parseResume = async (fileContent, fileType) => {
 
   return {
     ...parsed,
+    contactDetails: parsed.contactDetails,
     extractedText,
   }
 }
@@ -46,6 +52,12 @@ const parseStructuredData = (text) => {
     title: extractTitle(lines),
   }
 
+  const contactDetails = {
+    email: personalInfo.email,
+    phone: personalInfo.phone,
+    location: personalInfo.location,
+  }
+
   const workExperience = extractWorkExperience(text)
   const education = extractEducation(text)
   const skills = extractSkills(text)
@@ -53,6 +65,7 @@ const parseStructuredData = (text) => {
 
   return {
     personalInfo,
+    contactDetails,
     summary,
     workExperience,
     education,

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Link, useLocation } from 'react-router-dom'
 import {
   BarChart3,
@@ -12,6 +13,7 @@ import { useState } from 'react'
 
 export default function Sidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, logout } = useAuthStore()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -75,7 +77,7 @@ export default function Sidebar() {
         <button
           onClick={() => {
             logout()
-            window.location.href = '/'
+            navigate('/')
           }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted hover:bg-tertiary hover:text-foreground transition"
         >

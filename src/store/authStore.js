@@ -3,19 +3,53 @@ import axios from 'axios'
 
 const API_URL = '/api'
 
+const getStoredAuth = () => {
+  if (typeof window === 'undefined') {
+    return { token: null, user: null }
+  }
+
+  try {
+    const token = localStorage.getItem('token')
+    const user = localStorage.getItem('user')
+
+    if (!token || !user) {
+      return { token: null, user: null }
+    }
+
+    return {
+      token,
+      user: JSON.parse(user),
+    }
+  } catch (err) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    return { token: null, user: null }
+  }
+}
+
+const setAuthHeader = (token) => {
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    return
+  }
+
+  delete axios.defaults.headers.common['Authorization']
+}
+
+const storedAuth = getStoredAuth()
+setAuthHeader(storedAuth.token)
+
 export const useAuthStore = create((set) => ({
-  user: null,
-  token: null,
+  user: storedAuth.user,
+  token: storedAuth.token,
+  isHydrated: true,
   isLoading: false,
   error: null,
 
   initializeAuth: () => {
-    const token = localStorage.getItem('token')
-    const user = localStorage.getItem('user')
-    if (token && user) {
-      set({ token, user: JSON.parse(user) })
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    }
+    const { token, user } = getStoredAuth()
+    set({ token, user, isHydrated: true })
+    setAuthHeader(token)
   },
 
   signup: async (name, email, password) => {
@@ -27,10 +61,10 @@ export const useAuthStore = create((set) => ({
         password,
       })
       const { user, token } = res.data
-      set({ user, token, isLoading: false })
+      set({ user, token, isLoading: false, isHydrated: true })
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      setAuthHeader(token)
       return { success: true }
     } catch (err) {
       const message = err.response?.data?.message || 'Signup failed'
@@ -47,10 +81,10 @@ export const useAuthStore = create((set) => ({
         password,
       })
       const { user, token } = res.data
-      set({ user, token, isLoading: false })
+      set({ user, token, isLoading: false, isHydrated: true })
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      setAuthHeader(token)
       return { success: true }
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed'
@@ -60,10 +94,10 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: () => {
-    set({ user: null, token: null })
+    set({ user: null, token: null, isHydrated: true })
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    delete axios.defaults.headers.common['Authorization']
+    setAuthHeader(null)
   },
 
   clearError: () => set({ error: null }),

@@ -1,10 +1,35 @@
 import express from 'express'
+import multer from 'multer'
 import Resume from '../models/Resume.js'
 import { authenticateToken } from '../middleware/auth.js'
 import { parseResume } from '../services/resumeParser.js'
 import { calculateATSScore } from '../services/atsScoring.js'
 
 const router = express.Router()
+const isAllowedResumeFile = (file) => {
+  const fileName = file.originalname.toLowerCase()
+
+  return (
+    file.mimetype === 'application/pdf' ||
+    file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    fileName.endsWith('.pdf') ||
+    fileName.endsWith('.docx')
+  )
+}
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    if (!isAllowedResumeFile(file)) {
+      return cb(new Error('Only PDF and DOCX files are supported'))
+    }
+
+    cb(null, true)
+  },
+})
 
 // Get all resumes for user
 router.get('/', authenticateToken, async (req, res) => {
@@ -30,52 +55,60 @@ router.get('/:id', authenticateToken, async (req, res) => {
 })
 
 // Create/Update resume from uploaded file
-router.post('/upload', authenticateToken, async (req, res) => {
-  try {
-    const { fileContent, fileName, fileType } = req.body
+router.post('/upload', authenticateToken, (req, res) => {
+  upload.single('resume')(req, res, async (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ message: 'Resume must be 10MB or smaller' })
+      }
 
-    if (!fileContent || !fileName) {
-      return res.status(400).json({ message: 'File content and name required' })
+      return res.status(400).json({ message: err.message || 'Invalid resume upload' })
     }
 
-    // Parse the file
-    const parsedData = await parseResume(fileContent, fileType)
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'Resume file is required' })
+      }
 
-    // Calculate ATS score
-    const atsData = calculateATSScore(parsedData)
+      const parsedData = await parseResume(req.file.buffer, req.file.mimetype)
+      const atsData = calculateATSScore(parsedData)
 
-    // Save resume
-    const resume = new Resume({
-      userId: req.user.userId,
-      personalInfo: parsedData.personalInfo,
-      summary: parsedData.summary,
-      workExperience: parsedData.workExperience,
-      education: parsedData.education,
-      skills: parsedData.skills,
-      atsScore: {
-        score: atsData.score,
+      const resume = new Resume({
+        userId: req.user.userId,
+        personalInfo: parsedData.personalInfo,
+        summary: parsedData.summary,
+        workExperience: parsedData.workExperience,
+        education: parsedData.education,
+        skills: parsedData.skills,
+        atsScore: {
+          score: atsData.score,
+          feedback: atsData.feedback,
+          keywordMatches: atsData.keywords,
+          lastCalculated: new Date(),
+        },
+        extractedContent: {
+          text: parsedData.extractedText,
+          rawText: parsedData.extractedText,
+        },
+        fileName: req.file.originalname,
+        fileType: req.file.mimetype,
+      })
+
+      await resume.save()
+
+      res.status(201).json({
+        resume,
+        parsedResume: {
+          ...parsedData,
+          contactDetails: parsedData.contactDetails,
+        },
+        atsScore: atsData.score,
         feedback: atsData.feedback,
-        keywordMatches: atsData.keywords,
-        lastCalculated: new Date(),
-      },
-      extractedContent: {
-        text: parsedData.extractedText,
-        rawText: fileContent,
-      },
-      fileName,
-      fileType,
-    })
-
-    await resume.save()
-
-    res.status(201).json({
-      resume,
-      atsScore: atsData.score,
-      feedback: atsData.feedback,
-    })
-  } catch (err) {
-    res.status(500).json({ message: 'Resume upload failed', error: err.message })
-  }
+      })
+    } catch (error) {
+      res.status(500).json({ message: 'Resume upload failed', error: error.message })
+    }
+  })
 })
 
 // Update resume
