@@ -1,5 +1,3 @@
-import Sidebar from '../components/Sidebar'
-import Navbar from '../components/Navbar'
 import { Card, CardTitle } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { FileUp } from 'lucide-react'
@@ -94,13 +92,8 @@ export default function ResumeBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 ml-64 p-8">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold text-foreground mb-8">Resume Builder</h1>
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-4xl font-bold text-foreground mb-8">Resume Builder</h1>
 
             <div className="grid md:grid-cols-2 gap-8">
               {/* Upload Section */}
@@ -239,14 +232,11 @@ export default function ResumeBuilder() {
                 </div>
               </div>
 
-              <div className="mt-6 flex gap-4">
-                <Button variant="primary">Export as PDF</Button>
-                <Button variant="outline">Save Draft</Button>
-              </div>
-            </Card>
-          </div>
+        <div className="mt-6 flex gap-4">
+          <Button variant="primary">Export as PDF</Button>
+          <Button variant="outline">Save Draft</Button>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

@@ -33,7 +33,7 @@ console.log('Attempting to connect to MongoDB at:', MONGODB_URI)
 mongoose
   .connect(MONGODB_URI)
   .then(async () => {
-    console.log('✅ Connected to MongoDB successfully')
+    console.log(' Connected to MongoDB successfully')
     await seedJobs()
   })
   .catch((err) => {

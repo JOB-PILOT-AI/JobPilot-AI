@@ -11,11 +11,12 @@ import {
 import { useAuthStore } from '../store/authStore'
 import { useState } from 'react'
 
-export default function Sidebar() {
+export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [uncontrolledCollapsed, setUncontrolledCollapsed] = useState(false)
+  const isCollapsed = controlledCollapsed ?? uncontrolledCollapsed
 
   const menuItems = [
     { label: 'Dashboard', icon: BarChart3, path: '/dashboard' },
@@ -36,7 +37,14 @@ export default function Sidebar() {
       <div className="px-4 py-4 border-b border-border flex justify-between items-center">
         {!isCollapsed && <span className="font-semibold text-foreground">Menu</span>}
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => {
+            if (onToggle) {
+              onToggle()
+              return
+            }
+
+            setUncontrolledCollapsed((prev) => !prev)
+          }}
           className="text-muted hover:text-foreground transition"
         >
           <ChevronLeft size={20} className={`${isCollapsed ? 'rotate-180' : ''} transition`} />

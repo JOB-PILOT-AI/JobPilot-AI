@@ -1,6 +1,4 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import Sidebar from '../components/Sidebar'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
@@ -41,163 +39,129 @@ export default function JobMatch() {
     }
   }
 
-  const contentPadding = user ? 'ml-64 p-8' : 'p-8'
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="flex">
-        {user && <Sidebar />}
-        <div className={`flex-1 ${contentPadding}`}>
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <div className="inline-block px-3 py-1 bg-accent text-black text-xs font-semibold rounded-full mb-4">
-                Engineering
-              </div>
-              <h1 className="text-4xl font-bold text-foreground mb-4">{job.title}</h1>
-              <div className="flex flex-wrap gap-6 text-muted">
-                <div className="flex items-center gap-2">
-                  <Building size={18} />
-                  {job.company}
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin size={18} />
-                  {job.location}
-                </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign size={18} />
-                  ${job.salary.min.toLocaleString()} - ${job.salary.max.toLocaleString()}
-                </div>
-              </div>
-            </div>
-
-            {/* Match Intelligence - Only for authenticated users */}
-            {user && (
-              <Card className="border-2 border-primary mb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <CardTitle className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                      {job.matchScore.overall}%
-                    </div>
-                    Match Intelligence
-                  </CardTitle>
-                  <Button variant="primary" onClick={handleApply}>
-                    Apply Now
-                  </Button>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6 mb-6">
-                  <div className="text-center p-4 bg-secondary rounded-lg">
-                    <div className="text-3xl font-bold text-accent mb-2">{job.matchScore.skillMatch}%</div>
-                    <div className="text-sm text-muted">Skill Match</div>
-                  </div>
-                  <div className="text-center p-4 bg-secondary rounded-lg">
-                    <div className="text-3xl font-bold text-accent mb-2">{job.matchScore.experienceMatch}%</div>
-                    <div className="text-sm text-muted">Experience Match</div>
-                  </div>
-                  <div className="text-center p-4 bg-secondary rounded-lg">
-                    <div className="text-3xl font-bold text-accent mb-2">{job.matchScore.educationMatch}%</div>
-                    <div className="text-sm text-muted">Education Match</div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-start gap-3">
-                  <CheckCircle size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-green-400 mb-1">High Confidence Alignment</div>
-                    <p className="text-sm text-green-400/70">{job.matchScore.details.feedback}</p>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Non-authenticated CTA */}
-            {!user && (
-              <Card className="border-2 border-primary mb-8 bg-gradient-to-r from-primary/10 to-accent/10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="mb-2">Want to see your match score?</CardTitle>
-                    <p className="text-muted">Get personalized job matching and AI-powered insights</p>
-                  </div>
-                  <Button variant="primary" onClick={handleApply} size="lg">
-                    Sign In to Apply
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {/* Critical Skill Overlap & Gaps - Only for authenticated */}
-            {user && (
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <Card>
-                  <div className="flex items-center gap-2 mb-4">
-                    <CheckCircle size={20} className="text-accent" />
-                    <CardTitle className="text-lg">Critical Skill Overlap</CardTitle>
-                  </div>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {job.matchScore.details.matchedSkills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="px-3 py-1 bg-accent/10 border border-accent/30 text-accent rounded-full text-sm"
-                        >
-                          ✓ {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <div className="flex items-center gap-2 mb-4">
-                    <AlertCircle size={20} className="text-yellow-400" />
-                    <CardTitle className="text-lg">Identified Gaps</CardTitle>
-                  </div>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {job.matchScore.details.missingSkills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-sm"
-                        >
-                          ○ {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Job Description */}
-            <Card className="mb-8">
-              <CardTitle className="mb-4">About This Role</CardTitle>
-              <CardContent className="space-y-4">
-                <p>{job.description}</p>
-                <h4 className="font-semibold text-foreground mt-6">Key Responsibilities:</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-muted">
-                  <li>Design and implement cloud infrastructure solutions</li>
-                  <li>Lead technical architecture discussions and design reviews</li>
-                  <li>Mentor junior engineers and conduct code reviews</li>
-                  <li>Collaborate with product teams to define technical roadmaps</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Company Card */}
-            <Card>
-              <CardTitle className="mb-4">About QuantumScale Systems</CardTitle>
-              <CardContent>
-                <p className="text-muted mb-4">
-                  A Series D unicorn focused on providing high-throughput edge computing for the next generation of AI-driven applications.
-                </p>
-                <Button variant="outline">View Company Profile →</Button>
-              </CardContent>
-            </Card>
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <div className="inline-block px-3 py-1 bg-accent text-black text-xs font-semibold rounded-full mb-4">
+          Engineering
+        </div>
+        <h1 className="text-4xl font-bold text-foreground mb-4">{job.title}</h1>
+        <div className="flex flex-wrap gap-6 text-muted">
+          <div className="flex items-center gap-2">
+            <Building size={18} />
+            {job.company}
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPin size={18} />
+            {job.location}
+          </div>
+          <div className="flex items-center gap-2">
+            <DollarSign size={18} />
+            ${job.salary.min.toLocaleString()} - ${job.salary.max.toLocaleString()}
           </div>
         </div>
       </div>
+
+      <Card className="border-2 border-primary mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <CardTitle className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              {job.matchScore.overall}%
+            </div>
+            Match Intelligence
+          </CardTitle>
+          <Button variant="primary" onClick={handleApply}>
+            Apply Now
+          </Button>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-6">
+          <div className="text-center p-4 bg-secondary rounded-lg">
+            <div className="text-3xl font-bold text-accent mb-2">{job.matchScore.skillMatch}%</div>
+            <div className="text-sm text-muted">Skill Match</div>
+          </div>
+          <div className="text-center p-4 bg-secondary rounded-lg">
+            <div className="text-3xl font-bold text-accent mb-2">{job.matchScore.experienceMatch}%</div>
+            <div className="text-sm text-muted">Experience Match</div>
+          </div>
+          <div className="text-center p-4 bg-secondary rounded-lg">
+            <div className="text-3xl font-bold text-accent mb-2">{job.matchScore.educationMatch}%</div>
+            <div className="text-sm text-muted">Education Match</div>
+          </div>
+        </div>
+
+        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-start gap-3">
+          <CheckCircle size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="font-semibold text-green-400 mb-1">High Confidence Alignment</div>
+            <p className="text-sm text-green-400/70">{job.matchScore.details.feedback}</p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <CheckCircle size={20} className="text-accent" />
+            <CardTitle className="text-lg">Critical Skill Overlap</CardTitle>
+          </div>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {job.matchScore.details.matchedSkills.map((skill) => (
+                <span
+                  key={skill}
+                  className="px-3 py-1 bg-accent/10 border border-accent/30 text-accent rounded-full text-sm"
+                >
+                  ✓ {skill}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle size={20} className="text-yellow-400" />
+            <CardTitle className="text-lg">Identified Gaps</CardTitle>
+          </div>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {job.matchScore.details.missingSkills.map((skill) => (
+                <span
+                  key={skill}
+                  className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-sm"
+                >
+                  ○ {skill}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mb-8">
+        <CardTitle className="mb-4">About This Role</CardTitle>
+        <CardContent className="space-y-4">
+          <p>{job.description}</p>
+          <h4 className="font-semibold text-foreground mt-6">Key Responsibilities:</h4>
+          <ul className="list-disc list-inside space-y-2 text-sm text-muted">
+            <li>Design and implement cloud infrastructure solutions</li>
+            <li>Lead technical architecture discussions and design reviews</li>
+            <li>Mentor junior engineers and conduct code reviews</li>
+            <li>Collaborate with product teams to define technical roadmaps</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardTitle className="mb-4">About QuantumScale Systems</CardTitle>
+        <CardContent>
+          <p className="text-muted mb-4">
+            A Series D unicorn focused on providing high-throughput edge computing for the next generation of AI-driven applications.
+          </p>
+          <Button variant="outline">View Company Profile →</Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }

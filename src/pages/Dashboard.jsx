@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Sidebar from '../components/Sidebar'
-import Navbar from '../components/Navbar'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
@@ -88,19 +86,13 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 ml-64 p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header */}
-            <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">
-                Welcome back, {user?.name}
-              </h1>
-              <p className="text-muted">Track your career intelligence metrics and job opportunities</p>
-            </div>
+    <div className="max-w-7xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold text-foreground mb-2">
+          Welcome back, {user?.name}
+        </h1>
+        <p className="text-muted">Track your career intelligence metrics and job opportunities</p>
+      </div>
 
             {/* Stats Grid */}
             <div className="grid md:grid-cols-4 gap-4">
@@ -229,7 +221,7 @@ export default function Dashboard() {
                         variant="ghost"
                         size="sm"
                         className="w-full"
-                        onClick={() => navigate(`/job/${job._id}`)}
+                        onClick={() => navigate(`/job-match/${job._id}`)}
                       >
                         View Details
                       </Button>
@@ -240,7 +232,7 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   className="w-full mt-4"
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/jobs')}
                 >
                   View All Matches
                 </Button>
@@ -277,9 +269,6 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </Card>
             </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

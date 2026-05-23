@@ -47,7 +47,7 @@ const parseStructuredData = (text) => {
   const personalInfo = {
     fullName: extractName(lines),
     email: extractEmail(text),
-    phone: extractPhone(text),
+    phone: extractPhoneNumber(text),
     location: extractLocation(lines),
     title: extractTitle(lines),
   }
@@ -74,8 +74,56 @@ const parseStructuredData = (text) => {
 }
 
 const extractName = (lines) => {
-  // First non-empty line is often the name
-  return lines[0]?.trim() || 'John Doe'
+  const topSection = lines.slice(0, 12)
+  const sectionKeywords = [
+    'summary',
+    'profile',
+    'about me',
+    'experience',
+    'education',
+    'skills',
+    'projects',
+    'certifications',
+    'resume',
+    'curriculum vitae',
+  ]
+  const titleKeywords = [
+    'engineer',
+    'developer',
+    'manager',
+    'analyst',
+    'architect',
+    'designer',
+    'consultant',
+    'specialist',
+    'lead',
+    'director',
+    'profile',
+    'summary',
+  ]
+
+  const candidates = []
+
+  for (const rawLine of topSection) {
+    const line = normalizeTextLine(rawLine)
+    if (!line) continue
+
+    if (isHeadingLike(line, sectionKeywords)) continue
+
+    const candidate = sanitizeNameCandidate(line)
+    if (!candidate) continue
+
+    if (!looksLikeHumanName(candidate, titleKeywords)) continue
+
+    candidates.push(candidate)
+  }
+
+  if (candidates.length > 0) {
+    candidates.sort((left, right) => scoreNameCandidate(right) - scoreNameCandidate(left))
+    return capitalizeName(candidates[0])
+  }
+
+  return 'John Doe'
 }
 
 const extractEmail = (text) => {
@@ -84,11 +132,111 @@ const extractEmail = (text) => {
   return match ? match[1] : 'email@example.com'
 }
 
-const extractPhone = (text) => {
-  const phoneRegex = /(\+?1?\s?)?(\(\d{3}\)|\d{3})[-.\s]?\d{3}[-.\s]?\d{4}/
-  const match = text.match(phoneRegex)
-  return match ? match[0] : '+1 (555) 000-0000'
+const extractPhoneNumber = (text) => {
+  const normalizedText = text.replace(/\u00a0/g, ' ')
+  const patterns = [
+    /(?:\+91|91)[\s-]*([6-9]\d{4})[\s-]*([6-9]\d{4})\b/g,
+    /\b(?:0)?([6-9]\d{9})\b/g,
+    /\b(?:\+91|91)\s*0?([6-9]\d{9})\b/g,
+  ]
+
+  for (const pattern of patterns) {
+    const matches = normalizedText.matchAll(pattern)
+    for (const match of matches) {
+      const digits = match[1] && match[2] ? `${match[1]}${match[2]}` : match[1]
+      if (isValidIndianMobile(digits)) {
+        return `+91${digits}`
+      }
+    }
+  }
+
+  return '+91 0000000000'
 }
+
+const normalizeTextLine = (line) => line.replace(/\s+/g, ' ').trim()
+
+const isHeadingLike = (line, sectionKeywords) => {
+  const lowerLine = line.toLowerCase()
+  return sectionKeywords.some((keyword) => lowerLine === keyword || lowerLine.startsWith(`${keyword}:`))
+}
+
+const sanitizeNameCandidate = (line) => {
+  if (/@/.test(line) || /https?:\/\//i.test(line) || /www\./i.test(line)) {
+    return ''
+  }
+
+  if (/\d/.test(line)) {
+    return ''
+  }
+
+  const cleaned = line
+    .replace(/^[•\-\u2022\*]+\s*/g, '')
+    .replace(/\s*\|\s*/g, ' ')
+    .replace(/[(),:/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return /^[A-Za-z][A-Za-z'`\- ]*[A-Za-z]$/.test(cleaned) ? cleaned : ''
+}
+
+const looksLikeHumanName = (candidate, titleKeywords) => {
+  const words = candidate.split(' ')
+
+  if (words.length < 2 || words.length > 4) {
+    return false
+  }
+
+  if (candidate.length < 4 || candidate.length > 40) {
+    return false
+  }
+
+  const lowerCandidate = candidate.toLowerCase()
+  if (titleKeywords.some((keyword) => lowerCandidate.includes(keyword))) {
+    return false
+  }
+
+  if (/\b(resume|curriculum vitae|cv|profile|about me|contact|summary)\b/i.test(candidate)) {
+    return false
+  }
+
+  return words.every((word) => /^[A-Za-z][A-Za-z'`\-]*$/.test(word))
+}
+
+const scoreNameCandidate = (candidate) => {
+  const words = candidate.split(' ')
+  const hasTitleCase = words.every((word) => /^[A-Z][a-z]+(?:['`-][A-Z]?[a-z]+)?$/.test(word))
+  const hasUppercase = words.every((word) => /^[A-Z]+(?:['`-][A-Z]+)?$/.test(word))
+
+  let score = 0
+
+  if (words.length === 2) score += 6
+  if (words.length === 3) score += 8
+  if (words.length === 4) score += 5
+  if (hasTitleCase) score += 8
+  if (hasUppercase) score += 6
+  if (candidate.length >= 10 && candidate.length <= 30) score += 4
+
+  return score
+}
+
+const capitalizeName = (name) =>
+  name
+    .split(' ')
+    .map((word) => {
+      const lowerWord = word.toLowerCase()
+      return lowerWord
+        .split('-')
+        .map((segment) =>
+          segment
+            .split("'")
+            .map((piece) => piece.charAt(0).toUpperCase() + piece.slice(1))
+            .join("'")
+        )
+        .join('-')
+    })
+    .join(' ')
+
+const isValidIndianMobile = (digits) => /^[6-9]\d{9}$/.test(digits)
 
 const extractLocation = (lines) => {
   // Look for city, state pattern

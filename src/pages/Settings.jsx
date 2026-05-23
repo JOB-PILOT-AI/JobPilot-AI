@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import Sidebar from '../components/Sidebar'
-import Navbar from '../components/Navbar'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -38,16 +36,11 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 ml-64 p-8">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold text-foreground mb-8">Settings</h1>
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-4xl font-bold text-foreground mb-8">Settings</h1>
 
             {/* Profile Settings */}
-            <Card className="mb-8">
+          <Card className="mb-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                   <Shield size={20} className="text-white" />
@@ -113,10 +106,10 @@ export default function Settings() {
                   {isSaving ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
-            </Card>
+          </Card>
 
             {/* Notification Preferences */}
-            <Card className="mb-8">
+          <Card className="mb-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                   <Bell size={20} className="text-white" />
@@ -165,10 +158,10 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
-            </Card>
+          </Card>
 
             {/* Security */}
-            <Card>
+          <Card>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                   <Lock size={20} className="text-white" />
@@ -207,10 +200,7 @@ export default function Settings() {
                   </Button>
                 </div>
               </div>
-            </Card>
-          </div>
-        </div>
-      </div>
+      </Card>
     </div>
   )
 }

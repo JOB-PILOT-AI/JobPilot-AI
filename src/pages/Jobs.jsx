@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 import { Card, CardContent, CardTitle } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -82,16 +81,12 @@ export default function Jobs() {
   )
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Job Matches</h1>
-          <p className="text-lg text-muted mb-8">
-            Explore opportunities that match your skills and experience
-          </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-foreground mb-4">Job Matches</h1>
+        <p className="text-lg text-muted mb-8">
+          Explore opportunities that match your skills and experience
+        </p>
 
           {/* Search Bar */}
           <div className="relative">
@@ -104,10 +99,10 @@ export default function Jobs() {
               className="pl-10 py-3"
             />
           </div>
-        </div>
+      </div>
 
         {/* Jobs Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
               <Card
@@ -182,7 +177,6 @@ export default function Jobs() {
               </Button>
             </div>
           )}
-        </div>
       </div>
     </div>
   )

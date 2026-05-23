@@ -10,6 +10,7 @@ import JobMatch from './pages/JobMatch'
 import Dashboard from './pages/Dashboard'
 import ResumeBuilder from './pages/ResumeBuilder'
 import Settings from './pages/Settings'
+import DashboardLayout from './components/DashboardLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -24,14 +25,16 @@ function App() {
       {/* PUBLIC ROUTES */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/jobs" element={<Jobs />} />
-      <Route path="/job-match/:jobId" element={<JobMatch />} />
 
       {/* PROTECTED ROUTES */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/resume-builder" element={<ResumeBuilder />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/job-match/:jobId" element={<JobMatch />} />
+          <Route path="/resume-builder" element={<ResumeBuilder />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
       </Route>
 
       {/* CATCH ALL - redirect to home */}
