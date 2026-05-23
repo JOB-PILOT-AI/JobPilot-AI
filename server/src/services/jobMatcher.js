@@ -54,12 +54,14 @@ export const calculateJobMatch = (resume, job) => {
 }
 
 const extractYearsOfExperience = (resume) => {
-  if (!resume.workExperience || resume.workExperience.length === 0) {
+  const experienceItems = resume.experience || resume.workExperience || []
+
+  if (experienceItems.length === 0) {
     return 0
   }
 
   let totalYears = 0
-  for (const exp of resume.workExperience) {
+  for (const exp of experienceItems) {
     const startYear = parseInt(exp.startDate?.substring(0, 4) || new Date().getFullYear())
     const endYear = exp.isCurrent
       ? new Date().getFullYear()

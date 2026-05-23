@@ -11,10 +11,23 @@ const resumeSchema = new mongoose.Schema(
       fullName: String,
       email: String,
       phone: String,
+      linkedin: String,
+      github: String,
       location: String,
+      summary: String,
       title: String,
     },
     summary: String,
+    experience: [
+      {
+        company: String,
+        position: String,
+        startDate: String,
+        endDate: String,
+        description: String,
+        isCurrent: Boolean,
+      },
+    ],
     workExperience: [
       {
         company: String,

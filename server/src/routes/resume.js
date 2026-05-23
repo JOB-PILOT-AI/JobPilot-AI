@@ -34,7 +34,7 @@ const upload = multer({
 // Get all resumes for user
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const resumes = await Resume.find({ userId: req.user.userId })
+    const resumes = await Resume.find({ userId: req.user.userId }).sort({ createdAt: -1 })
     res.json(resumes)
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch resumes', error: err.message })
@@ -71,15 +71,22 @@ router.post('/upload', authenticateToken, (req, res) => {
       }
 
       const parsedData = await parseResume(req.file.buffer, req.file.mimetype)
-      const atsData = calculateATSScore(parsedData)
+      const resumeData = parsedData.resumeData || parsedData
+      const atsData = calculateATSScore({
+        ...resumeData,
+        workExperience: resumeData.experience || parsedData.workExperience || [],
+      })
 
       const resume = new Resume({
         userId: req.user.userId,
-        personalInfo: parsedData.personalInfo,
-        summary: parsedData.summary,
-        workExperience: parsedData.workExperience,
-        education: parsedData.education,
-        skills: parsedData.skills,
+        personalInfo: resumeData.personalInfo,
+        summary: resumeData.personalInfo?.summary || '',
+        workExperience: resumeData.experience || [],
+        experience: resumeData.experience || [],
+        education: resumeData.education || [],
+        skills: resumeData.skills || [],
+        projects: resumeData.projects || [],
+        certifications: resumeData.certifications || [],
         atsScore: {
           score: atsData.score,
           feedback: atsData.feedback,
@@ -98,10 +105,8 @@ router.post('/upload', authenticateToken, (req, res) => {
 
       res.status(201).json({
         resume,
-        parsedResume: {
-          ...parsedData,
-          contactDetails: parsedData.contactDetails,
-        },
+        parsedResume: resumeData,
+        resumeData,
         atsScore: atsData.score,
         feedback: atsData.feedback,
       })
@@ -119,11 +124,45 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Resume not found' })
     }
 
-    Object.assign(resume, req.body)
-    
-    // Recalculate ATS score if content changed
-    if (req.body.personalInfo || req.body.workExperience || req.body.skills) {
-      const atsData = calculateATSScore(resume)
+    const payload = req.body.resumeData || req.body
+
+    if (payload.personalInfo) {
+      resume.personalInfo = {
+        ...resume.personalInfo?.toObject?.(),
+        ...payload.personalInfo,
+      }
+    }
+
+    if (payload.summary !== undefined) {
+      resume.summary = payload.summary
+    }
+
+    if (payload.experience || payload.workExperience) {
+      resume.workExperience = payload.experience || payload.workExperience
+      resume.experience = payload.experience || payload.workExperience
+    }
+
+    if (payload.education) {
+      resume.education = payload.education
+    }
+
+    if (payload.skills) {
+      resume.skills = payload.skills
+    }
+
+    if (payload.projects) {
+      resume.projects = payload.projects
+    }
+
+    if (payload.certifications) {
+      resume.certifications = payload.certifications
+    }
+
+    if (payload.personalInfo || payload.experience || payload.workExperience || payload.skills || payload.education || payload.projects || payload.certifications) {
+      const atsData = calculateATSScore({
+        ...resume.toObject(),
+        workExperience: resume.workExperience || resume.experience || [],
+      })
       resume.atsScore = {
         score: atsData.score,
         feedback: atsData.feedback,

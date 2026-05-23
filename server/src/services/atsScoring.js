@@ -17,13 +17,15 @@ export const calculateATSScore = (resume) => {
   }
 
   // Check work experience (25 points)
-  if (resume.workExperience && resume.workExperience.length > 0) {
+  const experienceItems = resume.experience || resume.workExperience || []
+
+  if (experienceItems.length > 0) {
     score += 15
-    feedback.push(`Includes ${resume.workExperience.length} work experience(s)`)
+    feedback.push(`Includes ${experienceItems.length} work experience(s)`)
     
     // Check for clear descriptions
-    const withDescriptions = resume.workExperience.filter((exp) => exp.description?.length > 20)
-    if (withDescriptions.length === resume.workExperience.length) {
+    const withDescriptions = experienceItems.filter((exp) => exp.description?.length > 20)
+    if (withDescriptions.length === experienceItems.length) {
       score += 10
       feedback.push('All positions have clear descriptions')
     }
