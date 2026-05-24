@@ -21,6 +21,7 @@ const ResumeForm = ({
   onSectionAdd,
   onSectionRemove,
   onSectionChange,
+  onClearResume,
   canSave,
 }) => {
   const fileInputRef = useRef(null)
@@ -105,10 +106,21 @@ const ResumeForm = ({
             <CardTitle className="mb-2">Personal Information</CardTitle>
             <p className="text-sm text-muted">Keep contact details and summary aligned with ATS systems.</p>
           </div>
-          <Button variant="outline" size="sm" onClick={onSave} disabled={isSaving || !canSave}>
-            <Save size={14} className="mr-2" />
-            {isSaving ? 'Saving...' : 'Save Draft'}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearResume}
+              disabled={isUploading || isSaving}
+              className="border-[#e07855] text-[#e07855] hover:bg-[#e07855]/10 hover:text-[#e07855] focus:ring-[#e07855]"
+            >
+              Clear Resume
+            </Button>
+            <Button variant="outline" size="sm" onClick={onSave} disabled={isSaving || !canSave}>
+              <Save size={14} className="mr-2" />
+              {isSaving ? 'Saving...' : 'Save Draft'}
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

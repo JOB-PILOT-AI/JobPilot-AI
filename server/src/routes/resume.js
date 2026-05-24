@@ -1,6 +1,7 @@
 import express from 'express'
 import multer from 'multer'
 import Resume from '../models/Resume.js'
+import User from '../models/User.js'
 import { authenticateToken } from '../middleware/auth.js'
 import { parseResume } from '../services/resumeParser.js'
 import { calculateATSScore } from '../services/atsScoring.js'
@@ -38,6 +39,23 @@ router.get('/', authenticateToken, async (req, res) => {
     res.json(resumes)
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch resumes', error: err.message })
+  }
+})
+
+// Clear all resumes for user
+router.delete('/', authenticateToken, async (req, res) => {
+  try {
+    const [deleteResult] = await Promise.all([
+      Resume.deleteMany({ userId: req.user.userId }),
+      User.updateOne({ _id: req.user.userId }, { $unset: { resumeId: '' } }),
+    ])
+
+    res.json({
+      message: 'Resume data cleared successfully',
+      deletedCount: deleteResult.deletedCount || 0,
+    })
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to clear resume data', error: err.message })
   }
 })
 

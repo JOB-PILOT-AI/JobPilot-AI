@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import ResumeForm from '../components/resume/ResumeForm'
 import ResumePreview from '../components/resume/ResumePreview'
 import { useAuthStore } from '../store/authStore'
-import { useResumeBuilderStore } from '../store/resumeBuilderStore'
+import { clearPersistedResumeData, useResumeBuilderStore } from '../store/resumeBuilderStore'
 import { normalizeResumeData, toLegacyResumePayload } from '../lib/resumeStructure'
 
 export default function ResumeBuilder() {
@@ -13,7 +13,7 @@ export default function ResumeBuilder() {
     fileName,
     resumeData,
     hydrateResume,
-    reset,
+    resetResumeData,
     updatePersonalInfoField,
     addSkill,
     removeSkill,
@@ -28,29 +28,58 @@ export default function ResumeBuilder() {
   const [uploadError, setUploadError] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
+  const [formResetKey, setFormResetKey] = useState(0)
+  const hydrationVersionRef = useRef(0)
 
   useEffect(() => {
     const loadLatestResume = async () => {
       if (!token) return
+
+      const requestVersion = hydrationVersionRef.current
 
       try {
         const response = await axios.get('/api/resume', {
           headers: { Authorization: `Bearer ${token}` },
         })
 
+        if (requestVersion !== hydrationVersionRef.current) {
+          return
+        }
+
         const latestResume = response.data?.[0]
         if (latestResume) {
           hydrateResume(latestResume)
         } else {
-          reset()
+          resetResumeData()
         }
       } catch {
-        reset()
+        resetResumeData()
       }
     }
 
     loadLatestResume()
-  }, [token, hydrateResume, reset])
+  }, [token, hydrateResume, resetResumeData])
+
+  const handleClearResume = async () => {
+    hydrationVersionRef.current += 1
+    setIsSaving(false)
+    setIsUploading(false)
+    setUploadError('')
+    setUploadSuccess('')
+    setSaveMessage('')
+
+    try {
+      await axios.delete('/api/resume', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+    } catch (error) {
+      setUploadError(error.response?.data?.message || 'Failed to clear resume data.')
+    } finally {
+      clearPersistedResumeData()
+      resetResumeData()
+      setFormResetKey((currentKey) => currentKey + 1)
+    }
+  }
 
   const handleUploadFile = async (file) => {
     const allowedTypes = [
@@ -146,6 +175,7 @@ export default function ResumeBuilder() {
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)] items-start">
         <ResumeForm
+          key={formResetKey}
           resumeData={normalizeResumeData(resumeData)}
           fileName={fileName}
           isUploading={isUploading}
@@ -161,6 +191,7 @@ export default function ResumeBuilder() {
           onSectionAdd={addSectionItem}
           onSectionRemove={removeSectionItem}
           onSectionChange={updateSectionItem}
+          onClearResume={handleClearResume}
           canSave={!isSaveDisabled}
         />
 

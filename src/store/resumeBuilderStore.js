@@ -8,6 +8,39 @@ import {
   normalizeResumeData,
 } from '../lib/resumeStructure'
 
+const RESUME_STORAGE_KEYS = [
+  'jobpilot-resume-builder',
+  'jobpilot-resume-state',
+  'resume-builder',
+  'resumeBuilderStore',
+  'resume-store',
+  'resumeData',
+]
+
+const clearStorageBucket = (storage) => {
+  if (typeof window === 'undefined' || !storage) {
+    return
+  }
+
+  const keysToClear = new Set(RESUME_STORAGE_KEYS)
+
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index)
+    if (!key) continue
+
+    if (key.startsWith('jobpilot-resume') || key.startsWith('resumeBuilder') || keysToClear.has(key)) {
+      keysToClear.add(key)
+    }
+  }
+
+  keysToClear.forEach((key) => storage.removeItem(key))
+}
+
+export const clearPersistedResumeData = () => {
+  clearStorageBucket(localStorage)
+  clearStorageBucket(sessionStorage)
+}
+
 const createSectionItem = (section) => {
   switch (section) {
     case 'education':
@@ -23,11 +56,15 @@ const createSectionItem = (section) => {
   }
 }
 
-export const useResumeBuilderStore = create((set) => ({
+const getInitialResumeState = () => ({
   resumeId: null,
   fileName: '',
   resumeData: createEmptyResumeData(),
   isDirty: false,
+})
+
+export const useResumeBuilderStore = create((set) => ({
+  ...getInitialResumeState(),
   hydrateResume: (resume) =>
     set({
       resumeId: resume?._id || null,
@@ -152,11 +189,6 @@ export const useResumeBuilderStore = create((set) => ({
       },
       isDirty: true,
     })),
-  reset: () =>
-    set({
-      resumeId: null,
-      fileName: '',
-      resumeData: createEmptyResumeData(),
-      isDirty: false,
-    }),
+  resetResumeData: () => set(getInitialResumeState()),
+  reset: () => set(getInitialResumeState()),
 }))
