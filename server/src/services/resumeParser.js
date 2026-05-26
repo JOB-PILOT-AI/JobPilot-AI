@@ -1,143 +1,6 @@
 import pdfParse from 'pdf-parse'
 import mammoth from 'mammoth'
-
-const SKILL_DICTIONARY = [
-  { canonical: 'JavaScript', aliases: ['javascript', 'java script', 'js'] },
-  { canonical: 'TypeScript', aliases: ['typescript', 'type script', 'ts'] },
-  { canonical: 'React', aliases: ['react', 'reactjs', 'react js'] },
-  { canonical: 'Next.js', aliases: ['next js', 'nextjs', 'next.js'] },
-  { canonical: 'Vue.js', aliases: ['vue', 'vuejs', 'vue js', 'vue.js'] },
-  { canonical: 'Angular', aliases: ['angular'] },
-  { canonical: 'Svelte', aliases: ['svelte'] },
-  { canonical: 'Tailwind CSS', aliases: ['tailwind css', 'tailwindcss', 'tailwind'] },
-  { canonical: 'Redux', aliases: ['redux', 'redux toolkit'] },
-  { canonical: 'HTML', aliases: ['html5', 'html'] },
-  { canonical: 'CSS', aliases: ['css3', 'css'] },
-  { canonical: 'Vite', aliases: ['vite'] },
-  { canonical: 'Webpack', aliases: ['webpack'] },
-  { canonical: 'Babel', aliases: ['babel'] },
-  { canonical: 'Material UI', aliases: ['material ui', 'mui'] },
-  { canonical: 'Chakra UI', aliases: ['chakra ui'] },
-  { canonical: 'Bootstrap', aliases: ['bootstrap'] },
-  { canonical: 'Sass', aliases: ['sass'] },
-  { canonical: 'Less', aliases: ['less'] },
-  { canonical: 'Framer Motion', aliases: ['framer motion'] },
-  { canonical: 'Node.js', aliases: ['node js', 'nodejs', 'node.js'] },
-  { canonical: 'Express.js', aliases: ['express js', 'expressjs', 'express.js'] },
-  { canonical: 'NestJS', aliases: ['nestjs', 'nest js'] },
-  { canonical: 'Django', aliases: ['django'] },
-  { canonical: 'Flask', aliases: ['flask'] },
-  { canonical: 'FastAPI', aliases: ['fastapi', 'fast api'] },
-  { canonical: 'Spring Boot', aliases: ['spring boot'] },
-  { canonical: 'ASP.NET', aliases: ['asp net', 'asp.net', '.net'] },
-  { canonical: 'PHP', aliases: ['php'] },
-  { canonical: 'Laravel', aliases: ['laravel'] },
-  { canonical: 'Ruby on Rails', aliases: ['ruby on rails', 'rails'] },
-  { canonical: 'GraphQL', aliases: ['graphql'] },
-  { canonical: 'REST API', aliases: ['rest api', 'rest apis', 'restful api', 'restful apis'] },
-  { canonical: 'Apollo', aliases: ['apollo', 'apollo client'] },
-  { canonical: 'tRPC', aliases: ['trpc'] },
-  { canonical: 'Prisma', aliases: ['prisma'] },
-  { canonical: 'Mongoose', aliases: ['mongoose'] },
-  { canonical: 'Sequelize', aliases: ['sequelize'] },
-  { canonical: 'TypeORM', aliases: ['typeorm'] },
-  { canonical: 'Drizzle', aliases: ['drizzle', 'drizzle orm'] },
-  { canonical: 'Koa', aliases: ['koa'] },
-  { canonical: 'Hapi', aliases: ['hapi'] },
-  { canonical: 'Socket.IO', aliases: ['socket io', 'socketio'] },
-  { canonical: 'gRPC', aliases: ['grpc'] },
-  { canonical: 'MongoDB', aliases: ['mongodb', 'mongo'] },
-  { canonical: 'PostgreSQL', aliases: ['postgresql', 'postgres sql', 'postgres'] },
-  { canonical: 'MySQL', aliases: ['mysql'] },
-  { canonical: 'Redis', aliases: ['redis'] },
-  { canonical: 'Firebase', aliases: ['firebase'] },
-  { canonical: 'SQLite', aliases: ['sqlite'] },
-  { canonical: 'Oracle', aliases: ['oracle'] },
-  { canonical: 'Cassandra', aliases: ['cassandra'] },
-  { canonical: 'Elasticsearch', aliases: ['elasticsearch', 'elastic search'] },
-  { canonical: 'Docker', aliases: ['docker'] },
-  { canonical: 'Kubernetes', aliases: ['kubernetes', 'k8s'] },
-  { canonical: 'AWS', aliases: ['aws', 'amazon web services'] },
-  { canonical: 'Azure', aliases: ['azure', 'microsoft azure'] },
-  { canonical: 'Google Cloud Platform', aliases: ['google cloud platform', 'gcp', 'google cloud'] },
-  { canonical: 'CI/CD', aliases: ['ci cd', 'ci/cd', 'cicd'] },
-  { canonical: 'GitHub Actions', aliases: ['github actions'] },
-  { canonical: 'Nginx', aliases: ['nginx'] },
-  { canonical: 'Terraform', aliases: ['terraform'] },
-  { canonical: 'Ansible', aliases: ['ansible'] },
-  { canonical: 'Jenkins', aliases: ['jenkins'] },
-  { canonical: 'Linux', aliases: ['linux'] },
-  { canonical: 'Git', aliases: ['git'] },
-  { canonical: 'GitHub', aliases: ['github'] },
-  { canonical: 'GitLab', aliases: ['gitlab'] },
-  { canonical: 'Vercel', aliases: ['vercel'] },
-  { canonical: 'Netlify', aliases: ['netlify'] },
-  { canonical: 'Render', aliases: ['render'] },
-  { canonical: 'Railway', aliases: ['railway'] },
-  { canonical: 'Heroku', aliases: ['heroku'] },
-  { canonical: 'Cloudflare', aliases: ['cloudflare'] },
-  { canonical: 'Python', aliases: ['python'] },
-  { canonical: 'Java', aliases: ['java'] },
-  { canonical: 'C++', aliases: ['c++'] },
-  { canonical: 'C', aliases: ['c'] },
-  { canonical: 'Go', aliases: ['go', 'golang'] },
-  { canonical: 'Rust', aliases: ['rust'] },
-  { canonical: 'Ruby', aliases: ['ruby'] },
-  { canonical: 'C#', aliases: ['c#', 'c sharp'] },
-  { canonical: 'SQL', aliases: ['sql'] },
-  { canonical: 'Bash', aliases: ['bash', 'shell'] },
-  { canonical: 'PowerShell', aliases: ['powershell'] },
-  { canonical: 'Scala', aliases: ['scala'] },
-  { canonical: 'Swift', aliases: ['swift'] },
-  { canonical: 'Kotlin', aliases: ['kotlin'] },
-  { canonical: 'Dart', aliases: ['dart'] },
-  { canonical: 'Objective-C', aliases: ['objective c', 'objective-c'] },
-  { canonical: 'TensorFlow', aliases: ['tensorflow'] },
-  { canonical: 'PyTorch', aliases: ['pytorch'] },
-  { canonical: 'OpenCV', aliases: ['opencv'] },
-  { canonical: 'Pandas', aliases: ['pandas'] },
-  { canonical: 'NumPy', aliases: ['numpy'] },
-  { canonical: 'Scikit-learn', aliases: ['scikit learn', 'scikit-learn', 'sklearn'] },
-  { canonical: 'Matplotlib', aliases: ['matplotlib'] },
-  { canonical: 'Seaborn', aliases: ['seaborn'] },
-  { canonical: 'Jupyter', aliases: ['jupyter', 'jupyter notebook'] },
-  { canonical: 'Apache Spark', aliases: ['apache spark', 'spark'] },
-  { canonical: 'Hadoop', aliases: ['hadoop'] },
-  { canonical: 'XGBoost', aliases: ['xgboost'] },
-  { canonical: 'Keras', aliases: ['keras'] },
-  { canonical: 'NLTK', aliases: ['nltk'] },
-  { canonical: 'LangChain', aliases: ['langchain'] },
-  { canonical: 'Hugging Face', aliases: ['hugging face'] },
-  { canonical: 'MLflow', aliases: ['mlflow'] },
-  { canonical: 'Airflow', aliases: ['airflow'] },
-  { canonical: 'Pydantic', aliases: ['pydantic'] },
-  { canonical: 'Postman', aliases: ['postman'] },
-  { canonical: 'Insomnia', aliases: ['insomnia'] },
-  { canonical: 'Jest', aliases: ['jest'] },
-  { canonical: 'Vitest', aliases: ['vitest'] },
-  { canonical: 'Cypress', aliases: ['cypress'] },
-  { canonical: 'Playwright', aliases: ['playwright'] },
-  { canonical: 'Selenium', aliases: ['selenium'] },
-  { canonical: 'Mocha', aliases: ['mocha'] },
-  { canonical: 'Chai', aliases: ['chai'] },
-  { canonical: 'Testing Library', aliases: ['testing library', 'react testing library'] },
-  { canonical: 'React Native', aliases: ['react native'] },
-  { canonical: 'Flutter', aliases: ['flutter'] },
-  { canonical: 'Android', aliases: ['android'] },
-  { canonical: 'iOS', aliases: ['ios'] },
-  { canonical: 'Figma', aliases: ['figma'] },
-  { canonical: 'Jira', aliases: ['jira'] },
-  { canonical: 'Confluence', aliases: ['confluence'] },
-  { canonical: 'Scrum', aliases: ['scrum'] },
-  { canonical: 'Agile', aliases: ['agile'] },
-  { canonical: 'Microservices', aliases: ['microservices'] },
-  { canonical: 'Serverless', aliases: ['serverless'] },
-  { canonical: 'System Design', aliases: ['system design'] },
-  { canonical: 'Data Structures', aliases: ['data structures'] },
-  { canonical: 'Algorithms', aliases: ['algorithms'] },
-]
-
-const SKILL_SECTION_HEADINGS = ['skills', 'technical skills', 'tech stack', 'technologies', 'core competencies']
+import { extractSkillsFromText } from '../utils/normalizeSkills.js'
 
 const SECTION_HEADINGS = [
   'summary',
@@ -191,11 +54,6 @@ const PROFILE_LABELS = {
   linkedin: ['linkedin', 'linked in'],
   github: ['github', 'git hub'],
 }
-
-const SKILL_INDEX = SKILL_DICTIONARY.map((entry) => ({
-  canonical: entry.canonical,
-  aliases: entry.aliases.map((alias) => normalizeSkillTokens(alias)).filter((tokens) => tokens.length > 0),
-}))
 
 export const parseResume = async (fileContent, fileType) => {
   const buffer = Buffer.isBuffer(fileContent)
@@ -439,25 +297,7 @@ const normalizeProfileValue = (value, platform) => {
 }
 
 const extractSkills = (text, lines) => {
-  const sectionBlock = extractSectionBlock(lines, SKILL_SECTION_HEADINGS)
-  const sourceText = sectionBlock.length > 0 ? sectionBlock.join(' ') : text
-  return extractSkillsFromText(sourceText)
-}
-
-const extractSkillsFromText = (text) => {
-  const tokens = normalizeSkillTokens(text)
-  const foundSkills = []
-  const seen = new Set()
-
-  for (const entry of SKILL_INDEX) {
-    const matched = entry.aliases.some((aliasTokens) => matchesTokenSequence(tokens, aliasTokens))
-    if (matched && !seen.has(entry.canonical)) {
-      seen.add(entry.canonical)
-      foundSkills.push(entry.canonical)
-    }
-  }
-
-  return foundSkills
+  return extractSkillsFromText(text, lines)
 }
 
 const extractEducation = (lines) => {

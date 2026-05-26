@@ -1,3 +1,5 @@
+import { normalizeSkills } from '../utils/normalizeSkills.js'
+
 export const calculateATSScore = (resume) => {
   let score = 0
   const feedback = []
@@ -40,12 +42,14 @@ export const calculateATSScore = (resume) => {
   }
 
   // Check skills (25 points)
-  if (resume.skills && resume.skills.length > 0) {
+  const normalizedSkills = normalizeSkills(resume.skills || [])
+
+  if (normalizedSkills.length > 0) {
     score += 20
-    feedback.push(`Includes ${resume.skills.length} skills`)
-    keywords.push(...resume.skills)
+    feedback.push(`Includes ${normalizedSkills.length} skills`)
+    keywords.push(...normalizedSkills)
     
-    if (resume.skills.length >= 10) {
+    if (normalizedSkills.length >= 10) {
       score += 5
       feedback.push('Comprehensive skill set')
     }

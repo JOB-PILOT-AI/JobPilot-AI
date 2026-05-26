@@ -1,15 +1,18 @@
+import { normalizeSkills } from '../utils/normalizeSkills.js'
+
 export const calculateJobMatch = (resume, job) => {
   const resumeText = JSON.stringify(resume).toLowerCase()
-  const jobRequiredSkills = (job.requiredSkills || []).map((s) => s.toLowerCase())
-  const jobPreferredSkills = (job.preferredSkills || []).map((s) => s.toLowerCase())
-  const resumeSkills = (resume.skills || []).map((s) => s.toLowerCase())
+  const jobRequiredSkills = normalizeSkills(job.requiredSkills || [])
+  const jobPreferredSkills = normalizeSkills(job.preferredSkills || [])
+  const resumeSkills = normalizeSkills(resume.skills || [])
 
   // Calculate skill match
   let matchedSkills = []
   let missingSkills = []
 
   for (const skill of jobRequiredSkills) {
-    const isMatched = resumeSkills.some((s) => s.includes(skill) || skill.includes(s))
+    const normalizedSkill = skill.toLowerCase()
+    const isMatched = resumeSkills.some((s) => s.toLowerCase() === normalizedSkill)
     if (isMatched) {
       matchedSkills.push(skill)
     } else {
