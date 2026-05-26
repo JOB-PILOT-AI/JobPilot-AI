@@ -2,58 +2,163 @@ import pdfParse from 'pdf-parse'
 import mammoth from 'mammoth'
 
 const SKILL_DICTIONARY = [
-  { canonical: 'JavaScript', patterns: [/\bjavascript\b/i, /\bjs\b/i] },
-  { canonical: 'TypeScript', patterns: [/\btypescript\b/i, /\bts\b/i] },
-  { canonical: 'React', patterns: [/\breact(?:\.js|js)?\b/i, /\breact js\b/i] },
-  { canonical: 'Next.js', patterns: [/\bnext(?:\.js|js)?\b/i] },
-  { canonical: 'Node.js', patterns: [/\bnode(?:\.js|js)?\b/i, /\bnode\b/i] },
-  { canonical: 'Express', patterns: [/\bexpress\b/i] },
-  { canonical: 'MongoDB', patterns: [/\bmongodb\b/i, /\bmongo\b/i] },
-  { canonical: 'PostgreSQL', patterns: [/\bpostgres(?:ql)?\b/i] },
-  { canonical: 'MySQL', patterns: [/\bmysql\b/i] },
-  { canonical: 'SQL', patterns: [/\bsql\b/i] },
-  { canonical: 'HTML', patterns: [/\bhtml\b/i] },
-  { canonical: 'CSS', patterns: [/\bcss\b/i] },
-  { canonical: 'Tailwind CSS', patterns: [/\btailwind(?: css)?\b/i] },
-  { canonical: 'Redux', patterns: [/\bredux\b/i] },
-  { canonical: 'Git', patterns: [/\bgit\b/i] },
-  { canonical: 'Docker', patterns: [/\bdocker\b/i] },
-  { canonical: 'Kubernetes', patterns: [/\bkubernetes\b/i, /\bk8s\b/i] },
-  { canonical: 'AWS', patterns: [/\baws\b/i, /amazon web services/i] },
-  { canonical: 'GCP', patterns: [/\bgcp\b/i, /google cloud/i] },
-  { canonical: 'Azure', patterns: [/\bazure\b/i] },
-  { canonical: 'GraphQL', patterns: [/\bgraphql\b/i] },
-  { canonical: 'REST APIs', patterns: [/\brest(?:ful)? apis?\b/i, /\bapis?\b/i] },
-  { canonical: 'Jest', patterns: [/\bjest\b/i] },
-  { canonical: 'Cypress', patterns: [/\bcypress\b/i] },
-  { canonical: 'CI/CD', patterns: [/\bci\/?cd\b/i] },
-  { canonical: 'Linux', patterns: [/\blinux\b/i] },
-  { canonical: 'Java', patterns: [/\bjava\b/i] },
-  { canonical: 'Python', patterns: [/\bpython\b/i] },
-  { canonical: 'Go', patterns: [/\bgo\b/i, /\bgolang\b/i] },
-  { canonical: 'C++', patterns: [/\bc\+\+\b/i] },
-  { canonical: 'C#', patterns: [/\bc#\b/i] },
-  { canonical: 'Agile', patterns: [/\bagile\b/i] },
-  { canonical: 'Leadership', patterns: [/\bleadership\b/i] },
-  { canonical: 'Communication', patterns: [/\bcommunication\b/i] },
-  { canonical: 'Problem Solving', patterns: [/\bproblem solving\b/i, /\bproblem-solving\b/i] },
-  { canonical: 'System Design', patterns: [/\bsystem design\b/i] },
-  { canonical: 'Microservices', patterns: [/\bmicroservices\b/i] },
-  { canonical: 'Figma', patterns: [/\bfigma\b/i] },
+  { canonical: 'JavaScript', aliases: ['javascript', 'java script', 'js'] },
+  { canonical: 'TypeScript', aliases: ['typescript', 'type script', 'ts'] },
+  { canonical: 'React', aliases: ['react', 'reactjs', 'react js'] },
+  { canonical: 'Next.js', aliases: ['next js', 'nextjs', 'next.js'] },
+  { canonical: 'Vue.js', aliases: ['vue', 'vuejs', 'vue js', 'vue.js'] },
+  { canonical: 'Angular', aliases: ['angular'] },
+  { canonical: 'Svelte', aliases: ['svelte'] },
+  { canonical: 'Tailwind CSS', aliases: ['tailwind css', 'tailwindcss', 'tailwind'] },
+  { canonical: 'Redux', aliases: ['redux', 'redux toolkit'] },
+  { canonical: 'HTML', aliases: ['html5', 'html'] },
+  { canonical: 'CSS', aliases: ['css3', 'css'] },
+  { canonical: 'Vite', aliases: ['vite'] },
+  { canonical: 'Webpack', aliases: ['webpack'] },
+  { canonical: 'Babel', aliases: ['babel'] },
+  { canonical: 'Material UI', aliases: ['material ui', 'mui'] },
+  { canonical: 'Chakra UI', aliases: ['chakra ui'] },
+  { canonical: 'Bootstrap', aliases: ['bootstrap'] },
+  { canonical: 'Sass', aliases: ['sass'] },
+  { canonical: 'Less', aliases: ['less'] },
+  { canonical: 'Framer Motion', aliases: ['framer motion'] },
+  { canonical: 'Node.js', aliases: ['node js', 'nodejs', 'node.js'] },
+  { canonical: 'Express.js', aliases: ['express js', 'expressjs', 'express.js'] },
+  { canonical: 'NestJS', aliases: ['nestjs', 'nest js'] },
+  { canonical: 'Django', aliases: ['django'] },
+  { canonical: 'Flask', aliases: ['flask'] },
+  { canonical: 'FastAPI', aliases: ['fastapi', 'fast api'] },
+  { canonical: 'Spring Boot', aliases: ['spring boot'] },
+  { canonical: 'ASP.NET', aliases: ['asp net', 'asp.net', '.net'] },
+  { canonical: 'PHP', aliases: ['php'] },
+  { canonical: 'Laravel', aliases: ['laravel'] },
+  { canonical: 'Ruby on Rails', aliases: ['ruby on rails', 'rails'] },
+  { canonical: 'GraphQL', aliases: ['graphql'] },
+  { canonical: 'REST API', aliases: ['rest api', 'rest apis', 'restful api', 'restful apis'] },
+  { canonical: 'Apollo', aliases: ['apollo', 'apollo client'] },
+  { canonical: 'tRPC', aliases: ['trpc'] },
+  { canonical: 'Prisma', aliases: ['prisma'] },
+  { canonical: 'Mongoose', aliases: ['mongoose'] },
+  { canonical: 'Sequelize', aliases: ['sequelize'] },
+  { canonical: 'TypeORM', aliases: ['typeorm'] },
+  { canonical: 'Drizzle', aliases: ['drizzle', 'drizzle orm'] },
+  { canonical: 'Koa', aliases: ['koa'] },
+  { canonical: 'Hapi', aliases: ['hapi'] },
+  { canonical: 'Socket.IO', aliases: ['socket io', 'socketio'] },
+  { canonical: 'gRPC', aliases: ['grpc'] },
+  { canonical: 'MongoDB', aliases: ['mongodb', 'mongo'] },
+  { canonical: 'PostgreSQL', aliases: ['postgresql', 'postgres sql', 'postgres'] },
+  { canonical: 'MySQL', aliases: ['mysql'] },
+  { canonical: 'Redis', aliases: ['redis'] },
+  { canonical: 'Firebase', aliases: ['firebase'] },
+  { canonical: 'SQLite', aliases: ['sqlite'] },
+  { canonical: 'Oracle', aliases: ['oracle'] },
+  { canonical: 'Cassandra', aliases: ['cassandra'] },
+  { canonical: 'Elasticsearch', aliases: ['elasticsearch', 'elastic search'] },
+  { canonical: 'Docker', aliases: ['docker'] },
+  { canonical: 'Kubernetes', aliases: ['kubernetes', 'k8s'] },
+  { canonical: 'AWS', aliases: ['aws', 'amazon web services'] },
+  { canonical: 'Azure', aliases: ['azure', 'microsoft azure'] },
+  { canonical: 'Google Cloud Platform', aliases: ['google cloud platform', 'gcp', 'google cloud'] },
+  { canonical: 'CI/CD', aliases: ['ci cd', 'ci/cd', 'cicd'] },
+  { canonical: 'GitHub Actions', aliases: ['github actions'] },
+  { canonical: 'Nginx', aliases: ['nginx'] },
+  { canonical: 'Terraform', aliases: ['terraform'] },
+  { canonical: 'Ansible', aliases: ['ansible'] },
+  { canonical: 'Jenkins', aliases: ['jenkins'] },
+  { canonical: 'Linux', aliases: ['linux'] },
+  { canonical: 'Git', aliases: ['git'] },
+  { canonical: 'GitHub', aliases: ['github'] },
+  { canonical: 'GitLab', aliases: ['gitlab'] },
+  { canonical: 'Vercel', aliases: ['vercel'] },
+  { canonical: 'Netlify', aliases: ['netlify'] },
+  { canonical: 'Render', aliases: ['render'] },
+  { canonical: 'Railway', aliases: ['railway'] },
+  { canonical: 'Heroku', aliases: ['heroku'] },
+  { canonical: 'Cloudflare', aliases: ['cloudflare'] },
+  { canonical: 'Python', aliases: ['python'] },
+  { canonical: 'Java', aliases: ['java'] },
+  { canonical: 'C++', aliases: ['c++'] },
+  { canonical: 'C', aliases: ['c'] },
+  { canonical: 'Go', aliases: ['go', 'golang'] },
+  { canonical: 'Rust', aliases: ['rust'] },
+  { canonical: 'Ruby', aliases: ['ruby'] },
+  { canonical: 'C#', aliases: ['c#', 'c sharp'] },
+  { canonical: 'SQL', aliases: ['sql'] },
+  { canonical: 'Bash', aliases: ['bash', 'shell'] },
+  { canonical: 'PowerShell', aliases: ['powershell'] },
+  { canonical: 'Scala', aliases: ['scala'] },
+  { canonical: 'Swift', aliases: ['swift'] },
+  { canonical: 'Kotlin', aliases: ['kotlin'] },
+  { canonical: 'Dart', aliases: ['dart'] },
+  { canonical: 'Objective-C', aliases: ['objective c', 'objective-c'] },
+  { canonical: 'TensorFlow', aliases: ['tensorflow'] },
+  { canonical: 'PyTorch', aliases: ['pytorch'] },
+  { canonical: 'OpenCV', aliases: ['opencv'] },
+  { canonical: 'Pandas', aliases: ['pandas'] },
+  { canonical: 'NumPy', aliases: ['numpy'] },
+  { canonical: 'Scikit-learn', aliases: ['scikit learn', 'scikit-learn', 'sklearn'] },
+  { canonical: 'Matplotlib', aliases: ['matplotlib'] },
+  { canonical: 'Seaborn', aliases: ['seaborn'] },
+  { canonical: 'Jupyter', aliases: ['jupyter', 'jupyter notebook'] },
+  { canonical: 'Apache Spark', aliases: ['apache spark', 'spark'] },
+  { canonical: 'Hadoop', aliases: ['hadoop'] },
+  { canonical: 'XGBoost', aliases: ['xgboost'] },
+  { canonical: 'Keras', aliases: ['keras'] },
+  { canonical: 'NLTK', aliases: ['nltk'] },
+  { canonical: 'LangChain', aliases: ['langchain'] },
+  { canonical: 'Hugging Face', aliases: ['hugging face'] },
+  { canonical: 'MLflow', aliases: ['mlflow'] },
+  { canonical: 'Airflow', aliases: ['airflow'] },
+  { canonical: 'Pydantic', aliases: ['pydantic'] },
+  { canonical: 'Postman', aliases: ['postman'] },
+  { canonical: 'Insomnia', aliases: ['insomnia'] },
+  { canonical: 'Jest', aliases: ['jest'] },
+  { canonical: 'Vitest', aliases: ['vitest'] },
+  { canonical: 'Cypress', aliases: ['cypress'] },
+  { canonical: 'Playwright', aliases: ['playwright'] },
+  { canonical: 'Selenium', aliases: ['selenium'] },
+  { canonical: 'Mocha', aliases: ['mocha'] },
+  { canonical: 'Chai', aliases: ['chai'] },
+  { canonical: 'Testing Library', aliases: ['testing library', 'react testing library'] },
+  { canonical: 'React Native', aliases: ['react native'] },
+  { canonical: 'Flutter', aliases: ['flutter'] },
+  { canonical: 'Android', aliases: ['android'] },
+  { canonical: 'iOS', aliases: ['ios'] },
+  { canonical: 'Figma', aliases: ['figma'] },
+  { canonical: 'Jira', aliases: ['jira'] },
+  { canonical: 'Confluence', aliases: ['confluence'] },
+  { canonical: 'Scrum', aliases: ['scrum'] },
+  { canonical: 'Agile', aliases: ['agile'] },
+  { canonical: 'Microservices', aliases: ['microservices'] },
+  { canonical: 'Serverless', aliases: ['serverless'] },
+  { canonical: 'System Design', aliases: ['system design'] },
+  { canonical: 'Data Structures', aliases: ['data structures'] },
+  { canonical: 'Algorithms', aliases: ['algorithms'] },
 ]
+
+const SKILL_SECTION_HEADINGS = ['skills', 'technical skills', 'tech stack', 'technologies', 'core competencies']
 
 const SECTION_HEADINGS = [
   'summary',
   'professional summary',
   'profile',
   'about me',
+  'objective',
   'experience',
   'work experience',
   'employment history',
+  'work history',
   'education',
+  'academics',
   'skills',
+  'technical skills',
+  'tech stack',
+  'technologies',
   'projects',
+  'selected projects',
   'certifications',
+  'certificates',
   'resume',
   'curriculum vitae',
 ]
@@ -77,12 +182,20 @@ const ROLE_KEYWORDS = [
   'data',
   'full stack',
   'devops',
-  'qa',
-  'platform',
   'staff',
   'principal',
   'senior',
 ]
+
+const PROFILE_LABELS = {
+  linkedin: ['linkedin', 'linked in'],
+  github: ['github', 'git hub'],
+}
+
+const SKILL_INDEX = SKILL_DICTIONARY.map((entry) => ({
+  canonical: entry.canonical,
+  aliases: entry.aliases.map((alias) => normalizeSkillTokens(alias)).filter((tokens) => tokens.length > 0),
+}))
 
 export const parseResume = async (fileContent, fileType) => {
   const buffer = Buffer.isBuffer(fileContent)
@@ -130,19 +243,19 @@ const parseStructuredData = (text) => {
     fullName: extractName(lines),
     email: extractEmail(cleanedText),
     phone: extractPhone(cleanedText),
-    linkedin: extractLinkedin(cleanedText),
-    github: extractGithub(cleanedText),
-    location: extractLocation(lines),
-    summary: extractSummary(lines, cleanedText),
+    linkedin: extractLinkedin(cleanedText, lines),
+    github: extractGithub(cleanedText, lines),
+    location: '',
+    summary: '',
   }
 
   const resumeData = {
     personalInfo,
-    skills: extractSkills(cleanedText),
+    skills: extractSkills(cleanedText, lines),
     education: extractEducation(lines),
-    experience: extractExperience(lines),
-    projects: extractProjects(lines),
-    certifications: extractCertifications(lines),
+    experience: [],
+    projects: [],
+    certifications: [],
   }
 
   return {
@@ -169,7 +282,7 @@ const cleanText = (text) => {
   if (typeof text !== 'string') return ''
 
   return text
-    .replace(/\u00a0/g, ' ') 
+    .replace(/\u00a0/g, ' ')
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .split('\n')
@@ -181,7 +294,7 @@ const cleanText = (text) => {
 const splitLines = (text) => text.split('\n').map((line) => line.trim()).filter(Boolean)
 
 const extractName = (lines) => {
-  const topSection = lines.slice(0, 12)
+  const topSection = lines.slice(0, 10)
   const candidates = []
 
   for (const rawLine of topSection) {
@@ -205,93 +318,139 @@ const extractName = (lines) => {
 }
 
 const extractEmail = (text) => {
-  const emailRegex = /\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/
-  const match = text.match(emailRegex)
-  return match ? match[1].toLowerCase() : ''
+  const emailRegex = /\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g
+  const matches = text.match(emailRegex) || []
+
+  for (const match of matches) {
+    const normalized = match.toLowerCase().replace(/[).,;]+$/, '')
+    if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(normalized)) {
+      return normalized
+    }
+  }
+
+  return ''
 }
 
 const extractPhone = (text) => {
-  const patterns = [
-    /(?:\+91|91|0)?[\s-]*[6-9](?:[\s-]?\d){9}\b/g,
-    /(?:\+91|91)[\s-]*0?[6-9](?:[\s-]?\d){9}\b/g,
-  ]
+  const matches = text.match(/(?:\+91[\s-]?|91[\s-]?|0)?(?:[6-9]\d{2}[\s-]?\d{3}[\s-]?\d{4})/g) || []
 
-  for (const pattern of patterns) {
-    const matches = text.match(pattern) || []
-    for (const rawMatch of matches) {
-      const digits = rawMatch.replace(/\D/g, '')
-      const normalizedDigits = digits.startsWith('91') && digits.length === 12
-        ? digits.slice(2)
-        : digits.startsWith('0') && digits.length === 11
-          ? digits.slice(1)
-          : digits
+  for (const rawMatch of matches) {
+    const digits = rawMatch.replace(/\D/g, '')
 
-      if (/^[6-9]\d{9}$/.test(normalizedDigits)) {
-        return `+91${normalizedDigits}`
-      }
+    if (/^91[6-9]\d{9}$/.test(digits)) {
+      return `+91${digits.slice(2)}`
+    }
+
+    if (/^0?[6-9]\d{9}$/.test(digits)) {
+      return `+91${digits.replace(/^0/, '')}`
     }
   }
 
   return ''
 }
 
-const extractGithub = (text) => {
-  const githubRegex = /(?:https?:\/\/)?(?:www\.)?github\.com\/([A-Za-z0-9-]{1,39})(?:\/[A-Za-z0-9._-]+)?/i
-  const match = text.match(githubRegex)
-  return match ? `https://github.com/${match[1]}` : ''
+const extractGithub = (text, lines) => {
+  return extractProfileValue(text, lines, 'github')
 }
 
-const extractLinkedin = (text) => {
-  const linkedinRegex = /(?:https?:\/\/)?(?:[a-z]{2,3}\.)?linkedin\.com\/(?:in|pub)\/([A-Za-z0-9-_%]+)/i
-  const match = text.match(linkedinRegex)
-  return match ? `https://www.linkedin.com/in/${match[1].replace(/\/+$/, '')}` : ''
+const extractLinkedin = (text, lines) => {
+  return extractProfileValue(text, lines, 'linkedin')
 }
 
-const extractLocation = (lines) => {
+const extractProfileValue = (text, lines, platform) => {
+  const regexByPlatform = {
+    linkedin: [
+      /(?:https?:\/\/)?(?:[a-z]{2,3}\.)?linkedin\.com\/(?:in|pub)\/([A-Za-z0-9-_%]+)/i,
+      /(?:^|\s)(?:linkedin|linked in)\s*[:\-]?\s*(?:https?:\/\/)?(?:[a-z]{2,3}\.)?linkedin\.com\/(?:in|pub)\/([A-Za-z0-9-_%]+)/i,
+      /(?:^|\s)(?:linkedin|linked in)\s*[:\-]?\s*([A-Za-z0-9][A-Za-z0-9-_%]{1,100})\b/i,
+    ],
+    github: [
+      /(?:https?:\/\/)?(?:www\.)?github\.com\/([A-Za-z0-9-]{1,39})(?:\/?$|\?[A-Za-z0-9=&%_-]+$)/i,
+      /(?:^|\s)(?:github|git hub)\s*[:\-]?\s*([A-Za-z0-9-]{1,39})\b/i,
+    ],
+  }
+
+  const candidateValues = []
+  const platformLabels = PROFILE_LABELS[platform] || [platform]
+
   for (const line of lines.slice(0, 15)) {
-    const normalized = normalizeCandidateLine(line)
-    if (!normalized) continue
+    const cleaned = normalizeCandidateLine(line)
+    if (!cleaned) continue
 
-    const locationMatch = normalized.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*([A-Z]{2}|[A-Z][a-z]+)\b/)
-    if (locationMatch) {
-      return `${locationMatch[1]}, ${locationMatch[2]}`
+    const lowerLine = cleaned.toLowerCase()
+    if (!platformLabels.some((label) => lowerLine.includes(label))) continue
+
+    for (const regex of regexByPlatform[platform]) {
+      const match = cleaned.match(regex)
+      if (match) candidateValues.push(match[1])
     }
+  }
+
+  for (const regex of regexByPlatform[platform]) {
+    const match = text.match(regex)
+    if (match) candidateValues.push(match[1])
+  }
+
+  const seen = new Set()
+
+  for (const candidate of candidateValues) {
+    const normalized = normalizeProfileValue(candidate, platform)
+    if (!normalized) continue
+    if (seen.has(normalized)) continue
+    seen.add(normalized)
+    return normalized
   }
 
   return ''
 }
 
-const extractSummary = (lines, text) => {
-  const summarySection = extractSectionBlock(lines, ['summary', 'professional summary', 'profile', 'about me'])
-  if (summarySection.length > 0) {
-    const summary = summarySection.join(' ').trim()
-    if (summary.length >= 40) return summary
+const normalizeProfileValue = (value, platform) => {
+  const cleaned = normalizeCandidateLine(value).replace(/^@/, '').replace(/\/+$/, '').replace(/\?.*$/, '')
+
+  if (!cleaned) return ''
+
+  if (platform === 'linkedin') {
+    const profile = cleaned.match(/(?:https?:\/\/)?(?:[a-z]{2,3}\.)?linkedin\.com\/(?:in|pub)\/([A-Za-z0-9-_%]+)$/i)
+    if (profile) {
+      return `https://www.linkedin.com/in/${profile[1]}`
+    }
+
+    if (/^[A-Za-z0-9][A-Za-z0-9-_%]{1,100}$/.test(cleaned)) {
+      return `https://www.linkedin.com/in/${cleaned}`
+    }
+
+    return ''
   }
 
-  const introCandidate = lines.slice(0, 8).find((line) => {
-    const cleaned = normalizeCandidateLine(line)
-    return cleaned.length >= 80 && cleaned.length <= 240 && !isSectionHeading(cleaned) && !looksLikeContactLine(cleaned)
-  })
+  if (platform === 'github') {
+    const profile = cleaned.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([A-Za-z0-9-]{1,39})$/i)
+    if (profile) {
+      return `https://github.com/${profile[1]}`
+    }
 
-  if (introCandidate) {
-    return normalizeCandidateLine(introCandidate)
+    if (/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(cleaned)) {
+      return `https://github.com/${cleaned}`
+    }
+
+    return ''
   }
 
-  const textCandidate = text
-    .split(/\n\n+/)
-    .map((block) => block.replace(/\s+/g, ' ').trim())
-    .find((block) => block.length >= 80 && block.length <= 240)
-
-  return textCandidate || ''
+  return ''
 }
 
-const extractSkills = (text) => {
-  const lowerText = text.toLowerCase()
+const extractSkills = (text, lines) => {
+  const sectionBlock = extractSectionBlock(lines, SKILL_SECTION_HEADINGS)
+  const sourceText = sectionBlock.length > 0 ? sectionBlock.join(' ') : text
+  return extractSkillsFromText(sourceText)
+}
+
+const extractSkillsFromText = (text) => {
+  const tokens = normalizeSkillTokens(text)
   const foundSkills = []
   const seen = new Set()
 
-  for (const entry of SKILL_DICTIONARY) {
-    const matched = entry.patterns.some((pattern) => pattern.test(lowerText))
+  for (const entry of SKILL_INDEX) {
+    const matched = entry.aliases.some((aliasTokens) => matchesTokenSequence(tokens, aliasTokens))
     if (matched && !seen.has(entry.canonical)) {
       seen.add(entry.canonical)
       foundSkills.push(entry.canonical)
@@ -303,17 +462,20 @@ const extractSkills = (text) => {
 
 const extractEducation = (lines) => {
   const block = extractSectionBlock(lines, ['education', 'academics'])
-  const sourceLines = block.length > 0 ? block : lines.slice(0, 30)
+  if (block.length === 0) return []
+
   const education = []
   const seen = new Set()
+  let current = null
 
-  for (const line of sourceLines) {
+  for (const line of block) {
     const cleaned = normalizeCandidateLine(line)
     if (!cleaned || isSectionHeading(cleaned)) continue
 
+    const degreeMatch = cleaned.match(/\b(b\.?tech|b\.?e|b\.?sc|b\.?a|m\.?tech|m\.?e|m\.?sc|m\.?a|mba|ph\.?d|phd|bachelor|master|associate|diploma|engineering|computer science|information technology)\b/i)
+    const schoolMatch = cleaned.match(/\b(university|college|institute|school|academy|polytechnic)\b/i)
     const yearMatch = cleaned.match(/(19|20)\d{2}/)
-    const degreeMatch = cleaned.match(/\b(b\.?tech|b\.?e|b\.?sc|b\.?a|m\.?tech|m\.?e|m\.?sc|m\.?a|mba|ph\.?d|phd|bachelor|master|associate|diploma)\b/i)
-    const schoolMatch = cleaned.match(/\b(university|college|institute|school|academy)\b/i)
+    const fieldMatch = cleaned.match(/\b(computer science|information technology|electronics|mechanical|civil|electrical|data science|software engineering|artificial intelligence|machine learning)\b/i)
 
     if (!degreeMatch && !schoolMatch && !yearMatch) continue
 
@@ -321,151 +483,39 @@ const extractEducation = (lines) => {
     if (seen.has(key)) continue
     seen.add(key)
 
-    education.push({
+    const entry = {
       school: schoolMatch ? cleaned : '',
       degree: degreeMatch ? cleaned : '',
-      field: '',
+      field: fieldMatch ? fieldMatch[0] : '',
       graduationYear: yearMatch ? yearMatch[0] : '',
-    })
+    }
+
+    if (!current) {
+      current = entry
+    } else {
+      current = {
+        school: current.school || entry.school,
+        degree: current.degree || entry.degree,
+        field: current.field || entry.field,
+        graduationYear: current.graduationYear || entry.graduationYear,
+      }
+    }
+
+    const confidence = [current.school, current.degree, current.field, current.graduationYear].filter(Boolean).length
+    if (confidence >= 2) {
+      education.push({ ...current })
+      current = null
+    }
   }
 
   return education
 }
 
-const extractExperience = (lines) => {
-  const block = extractSectionBlock(lines, ['experience', 'work experience', 'employment history'])
-  const sourceLines = block.length > 0 ? block : lines
-  const experience = []
-  let current = null
+const extractExperience = () => []
 
-  for (const line of sourceLines) {
-    const cleaned = normalizeCandidateLine(line)
-    if (!cleaned) continue
+const extractProjects = () => []
 
-    if (isSectionHeading(cleaned)) {
-      if (current) {
-        finalizeExperience(current, experience)
-        current = null
-      }
-      continue
-    }
-
-    if (looksLikeDateLine(cleaned) || looksLikeRoleLine(cleaned)) {
-      if (current) {
-        finalizeExperience(current, experience)
-      }
-
-      current = {
-        company: '',
-        position: cleaned,
-        startDate: extractStartDate(cleaned),
-        endDate: extractEndDate(cleaned),
-        description: '',
-        isCurrent: /present|current/i.test(cleaned),
-      }
-      continue
-    }
-
-    if (!current) continue
-
-    if (!current.company && cleaned.length <= 60) {
-      current.company = cleaned
-      continue
-    }
-
-    if (cleaned.length > 20) {
-      current.description = `${current.description} ${cleaned}`.trim()
-    }
-  }
-
-  if (current) {
-    finalizeExperience(current, experience)
-  }
-
-  return experience
-}
-
-const extractProjects = (lines) => {
-  const block = extractSectionBlock(lines, ['projects', 'selected projects'])
-  if (block.length === 0) return []
-
-  const projects = []
-  let current = null
-
-  for (const line of block) {
-    const cleaned = normalizeCandidateLine(line)
-    if (!cleaned) continue
-
-    if (isSectionHeading(cleaned)) continue
-
-    const looksLikeTitle = cleaned.length <= 80 && /^[A-Z][A-Za-z0-9'&().,\-\s/]+$/.test(cleaned)
-
-    if ((looksLikeTitle && !looksLikeDateLine(cleaned)) || (!current && cleaned.length <= 50)) {
-      if (current) {
-        projects.push(current)
-      }
-
-      current = {
-        name: cleaned,
-        description: '',
-        technologies: [],
-        link: '',
-      }
-
-      continue
-    }
-
-    if (!current) continue
-
-    if (!current.description) {
-      current.description = cleaned
-    } else {
-      current.description = `${current.description} ${cleaned}`.trim()
-    }
-
-    const technologies = cleaned
-      .split(/[,|]/)
-      .map((item) => normalizeCandidateLine(item))
-      .filter((item) => item.length > 1 && item.length < 30)
-
-    for (const technology of technologies) {
-      if (!current.technologies.includes(technology)) {
-        current.technologies.push(technology)
-      }
-    }
-  }
-
-  if (current) {
-    projects.push(current)
-  }
-
-  return projects
-}
-
-const extractCertifications = (lines) => {
-  const block = extractSectionBlock(lines, ['certifications', 'certificates'])
-  if (block.length === 0) return []
-
-  const certifications = []
-  const seen = new Set()
-
-  for (const line of block) {
-    const cleaned = normalizeCandidateLine(line)
-    if (!cleaned || isSectionHeading(cleaned)) continue
-
-    const key = cleaned.toLowerCase()
-    if (seen.has(key)) continue
-    seen.add(key)
-
-    certifications.push({
-      name: cleaned,
-      issuer: '',
-      date: extractYear(cleaned),
-    })
-  }
-
-  return certifications
-}
+const extractCertifications = () => []
 
 const extractSectionBlock = (lines, headings) => {
   const startIndex = lines.findIndex((line) =>
@@ -504,6 +554,7 @@ const sanitizeNameCandidate = (line) => {
 
   const cleaned = line
     .replace(/^[•\-\u2022\*]+\s*/g, '')
+    .replace(/^(name|full name|candidate)\s*[:\-]?\s*/i, '')
     .replace(/[|(),:/]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
@@ -523,7 +574,7 @@ const looksLikeHumanName = (candidate) => {
   const lowerCandidate = candidate.toLowerCase()
   if (ROLE_KEYWORDS.some((keyword) => lowerCandidate.includes(keyword))) return false
 
-  if (/\b(resume|curriculum vitae|cv|profile|about me|contact|summary)\b/i.test(candidate)) return false
+  if (/\b(resume|curriculum vitae|cv|profile|about me|contact|summary|experience|skills|education|projects|certifications|objective|name)\b/i.test(candidate)) return false
 
   return words.every((word) => /^[A-Za-z][A-Za-z'`\-]*$/.test(word))
 }
@@ -569,35 +620,37 @@ const looksLikeRoleLine = (line) => {
   return ROLE_KEYWORDS.some((keyword) => lower.includes(keyword)) && line.length <= 120
 }
 
-const extractStartDate = (line) => {
-  const dateMatch = line.match(/(19|20)\d{2}/)
-  return dateMatch ? dateMatch[0] : ''
-}
-
-const extractEndDate = (line) => {
-  if (/present|current/i.test(line)) return 'Present'
-  const matches = line.match(/(19|20)\d{2}/g)
-  if (!matches || matches.length < 2) return ''
-  return matches[matches.length - 1]
-}
-
 const extractYear = (text) => {
   const match = text.match(/(19|20)\d{2}/)
   return match ? match[0] : ''
 }
 
-const finalizeExperience = (current, collection) => {
-  const description = current.description.replace(/\s+/g, ' ').trim()
-  const normalized = {
-    company: current.company,
-    position: current.position,
-    startDate: current.startDate,
-    endDate: current.endDate,
-    description,
-    isCurrent: current.isCurrent || /present|current/i.test(current.endDate) || /present|current/i.test(current.position),
+function normalizeSkillTokens(value) {
+  if (typeof value !== 'string') return []
+
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9+#]+/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+}
+
+const matchesTokenSequence = (tokens, candidateTokens) => {
+  if (candidateTokens.length === 0 || tokens.length < candidateTokens.length) return false
+
+  for (let index = 0; index <= tokens.length - candidateTokens.length; index += 1) {
+    let matched = true
+
+    for (let offset = 0; offset < candidateTokens.length; offset += 1) {
+      if (tokens[index + offset] !== candidateTokens[offset]) {
+        matched = false
+        break
+      }
+    }
+
+    if (matched) return true
   }
 
-  if (normalized.company || normalized.position || normalized.description) {
-    collection.push(normalized)
-  }
+  return false
 }
