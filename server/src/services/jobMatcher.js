@@ -1,10 +1,11 @@
 import { normalizeSkills } from '../utils/normalizeSkills.js'
 
-export const calculateJobMatch = (resume, job) => {
+export const calculateJobMatch = (resume, job, context = {}) => {
   const resumeText = JSON.stringify(resume).toLowerCase()
   const jobRequiredSkills = normalizeSkills(job.requiredSkills || [])
   const jobPreferredSkills = normalizeSkills(job.preferredSkills || [])
-  const resumeSkills = normalizeSkills(resume.skills || [])
+  const atsAnalytics = context.atsAnalytics || resume.atsAnalytics || null
+  const resumeSkills = normalizeSkills(atsAnalytics?.normalizedSkills || resume.skills || [])
 
   // Calculate skill match
   let matchedSkills = []
@@ -53,6 +54,8 @@ export const calculateJobMatch = (resume, job) => {
     matchedSkills,
     missingSkills,
     feedback,
+    atsScore: atsAnalytics?.score ?? null,
+    atsHealthLabel: atsAnalytics?.healthLabel ?? null,
   }
 }
 

@@ -1,274 +1,508 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { TrendingUp, FileText, Briefcase, Zap, CheckCircle, AlertCircle } from 'lucide-react'
-import axios from 'axios'
+import { clearPersistedResumeData, useResumeBuilderStore } from '../store/resumeBuilderStore'
+import {
+  AlertCircle,
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  FileText,
+  RefreshCcw,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Upload,
+} from 'lucide-react'
+
+const EMPTY_ANALYTICS = {
+  score: 0,
+  healthLabel: 'No analysis yet',
+  topSkills: [],
+  missingAreas: [],
+  recommendations: [],
+  strengths: [],
+  weaknesses: [],
+  passedRules: [],
+  failedRules: [],
+  categoryScores: {},
+  analyzedAt: null,
+}
+
+const buildLegacyAnalytics = (latestResume) => {
+  if (!latestResume?.atsScore) {
+    return null
+  }
+
+  return {
+    score: latestResume.atsScore.score || 0,
+    recommendations: latestResume.atsScore.feedback || [],
+    topSkills: latestResume.atsScore.keywordMatches || [],
+    missingAreas: [],
+    strengths: [],
+    weaknesses: [],
+    passedRules: [],
+    failedRules: [],
+    categoryScores: {},
+    healthLabel: latestResume.atsScore.score >= 75 ? 'Strong' : 'Needs improvement',
+    analyzedAt: latestResume.atsScore.lastCalculated || null,
+  }
+}
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user, token } = useAuthStore()
   const [resume, setResume] = useState(null)
+  const [atsAnalytics, setAtsAnalytics] = useState(null)
   const [jobMatches, setJobMatches] = useState([])
-  const [atsScore, setAtsScore] = useState(0)
-  const [stats, setStats] = useState({
-    applications: 0,
-    interviews: 0,
-    offers: 0,
-  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [uploadSuccess, setUploadSuccess] = useState('')
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [user])
+    if (token) {
+      fetchDashboardData()
+    }
+  }, [token])
 
   const fetchDashboardData = async () => {
+    setIsLoading(true)
     try {
-      // Fetch resume
-      const resumeRes = await axios.get('/api/resume', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (resumeRes.data.length > 0) {
-        setResume(resumeRes.data[0])
-        setAtsScore(resumeRes.data[0].atsScore?.score || 0)
-      }
-
-      // Fetch job matches (dummy data for now)
-      setJobMatches([
-        {
-          _id: '1',
-          title: 'Senior Staff Engineer',
-          company: 'QuantumScale Systems',
-          location: 'Palo Alto, CA',
-          matchScore: { overall: 94 },
-        },
-        {
-          _id: '2',
-          title: 'Principal Engineer',
-          company: 'TechCore Solutions',
-          location: 'San Francisco, CA',
-          matchScore: { overall: 88 },
-        },
-        {
-          _id: '3',
-          title: 'Staff Software Engineer',
-          company: 'CloudInnovate Inc',
-          location: 'Seattle, WA',
-          matchScore: { overall: 82 },
-        },
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined
+      const [resumeRes, matchRes] = await Promise.all([
+        axios.get('/api/resume', { headers }),
+        axios.get('/api/jobs/matches?limit=3', { headers }),
       ])
 
-      setStats({
-        applications: 12,
-        interviews: 3,
-        offers: 1,
-      })
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
+      const latestResume = resumeRes.data?.[0] || null
+      setResume(latestResume)
+      setAtsAnalytics(latestResume?.atsAnalytics || buildLegacyAnalytics(latestResume))
+      setJobMatches(matchRes.data?.matches || [])
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error)
+      setJobMatches([])
+      if (!resume) {
+        setAtsAnalytics(null)
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  // Chart data
-  const atsChartData = [
-    { name: 'Personal Info', value: 10 },
-    { name: 'Experience', value: 25 },
-    { name: 'Education', value: 15 },
-    { name: 'Skills', value: 35 },
-    { name: 'Extra', value: 15 },
-  ]
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
 
-  const matchData = [
-    { month: 'Week 1', matches: 4 },
-    { month: 'Week 2', matches: 7 },
-    { month: 'Week 3', matches: 5 },
-    { month: 'Week 4', matches: 9 },
-  ]
+    if (!file) {
+      return
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]
+    const normalizedName = file.name.toLowerCase()
+    const isAllowedFile =
+      allowedTypes.includes(file.type) || normalizedName.endsWith('.pdf') || normalizedName.endsWith('.docx')
+
+    if (!isAllowedFile) {
+      setUploadError('Please upload a PDF or DOCX resume.')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Resume must be 10MB or smaller.')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadError('')
+    setUploadSuccess('')
+
+    try {
+      const formData = new FormData()
+      formData.append('resume', file)
+
+      const response = await axios.post('/api/resume/upload', formData, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+
+      const uploadedResume = response.data?.resume || null
+      if (uploadedResume) {
+        setResume(uploadedResume)
+        setAtsAnalytics(uploadedResume.atsAnalytics || response.data?.atsAnalytics || null)
+      }
+
+      setUploadSuccess('Resume uploaded and ATS analysis generated successfully.')
+
+      const matchResponse = await axios.get('/api/jobs/matches?limit=3', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+      setJobMatches(matchResponse.data?.matches || [])
+    } catch (error) {
+      setUploadError(error.response?.data?.message || 'Resume upload failed. Please try again.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const currentATS = atsAnalytics || EMPTY_ANALYTICS
+  const bestMatch = jobMatches[0] || null
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleClearResume = async () => {
+    if (!resume) {
+      return
+    }
+
+    setIsUploading(false)
+    setUploadError('')
+    setUploadSuccess('')
+
+    try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined
+      await axios.delete('/api/resume', { headers })
+      clearPersistedResumeData()
+      useResumeBuilderStore.getState().resetResumeData()
+      setResume(null)
+      setAtsAnalytics(null)
+      setJobMatches([])
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error) {
+      setUploadError(error.response?.data?.message || 'Failed to clear resume data. Please try again.')
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold text-foreground mb-2">
-          Welcome back, {user?.name}
-        </h1>
-        <p className="text-muted">Track your career intelligence metrics and job opportunities</p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Welcome back, {user?.name}</h1>
+          <p className="text-muted">Run ATS analysis, inspect resume health, and keep job matching synchronized.</p>
+        </div>
+
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={fetchDashboardData} disabled={isLoading}>
+            <RefreshCcw size={16} className="mr-2" />
+            Refresh
+          </Button>
+          <Button variant="primary" onClick={() => navigate('/resume-builder')}>
+            Open Resume Builder
+          </Button>
+        </div>
       </div>
 
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-4 gap-4">
-              <Card className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">{atsScore}</div>
-                <CardTitle className="text-base mb-2">ATS Score</CardTitle>
-                <CardContent className="text-xs">
-                  Your resume ATS optimization score
-                </CardContent>
-              </Card>
+      <Card className="border border-primary/30 bg-gradient-to-br from-secondary via-secondary to-tertiary/50">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <CardTitle className="text-2xl">Resume Analysis</CardTitle>
+            <CardContent className="max-w-2xl">
+              Upload a resume to generate ATS analysis, resume health, and job match preview.
+            </CardContent>
+          </div>
 
-              <Card className="text-center">
-                <div className="text-4xl font-bold text-accent mb-2">{jobMatches.length}</div>
-                <CardTitle className="text-base mb-2">Top Matches</CardTitle>
-                <CardContent className="text-xs">
-                  Job opportunities matching your profile
-                </CardContent>
-              </Card>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+            <Button variant="primary" onClick={openFilePicker} disabled={isUploading}>
+              <Upload size={16} className="mr-2" />
+              {isUploading ? 'Uploading...' : 'Upload Resume'}
+            </Button>
+            {resume && (
+              <Button
+                variant="outline"
+                onClick={handleClearResume}
+                className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200"
+              >
+                Clear Resume
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => navigate('/resume-builder')}>
+              Edit Existing Resume
+            </Button>
+          </div>
+        </div>
 
-              <Card className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">{stats.applications}</div>
-                <CardTitle className="text-base mb-2">Applications</CardTitle>
-                <CardContent className="text-xs">
-                  Total applications submitted
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <div className="text-4xl font-bold text-accent mb-2">{stats.interviews}</div>
-                <CardTitle className="text-base mb-2">Interviews</CardTitle>
-                <CardContent className="text-xs">
-                  Scheduled interviews
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* ATS Intelligence Card */}
-            <Card className="border-2 border-primary">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Zap size={20} className="text-white" />
-                </div>
-                <CardTitle>ATS Intelligence</CardTitle>
-                <span className="ml-auto text-primary font-bold">{atsScore}/100</span>
+        {(uploadError || uploadSuccess) && (
+          <div className="mt-6 space-y-3">
+            {uploadError && (
+              <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+                <span>{uploadError}</span>
               </div>
+            )}
+            {uploadSuccess && (
+              <div className="flex items-start gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-200">
+                <CheckCircle2 size={18} className="mt-0.5 flex-shrink-0" />
+                <span>{uploadSuccess}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
 
-              {resume ? (
-                <div className="space-y-6">
-                  <div className="w-full h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={atsChartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
-                        <XAxis dataKey="name" stroke="#666" />
-                        <YAxis stroke="#666" />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#2a2a2a',
-                            border: '1px solid #404040',
-                          }}
-                        />
-                        <Bar dataKey="value" fill="#e07856" />
-                      </BarChart>
-                    </ResponsiveContainer>
+      {resume ? (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Card className="text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Target size={22} />
+              </div>
+              <div className="text-4xl font-bold text-foreground">{currentATS.score}</div>
+              <CardTitle className="mt-2 text-base">ATS Score</CardTitle>
+              <CardContent>Deterministic score derived from ATS rules</CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                <ShieldCheck size={22} />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{currentATS.healthLabel}</div>
+              <CardTitle className="mt-2 text-base">Resume Health</CardTitle>
+              <CardContent>{currentATS.failedRules.length} gap areas identified</CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Sparkles size={22} />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{currentATS.topSkills.length}</div>
+              <CardTitle className="mt-2 text-base">Top Skills</CardTitle>
+              <CardContent>Normalized skills surfaced from the resume parser</CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-foreground">
+                <Briefcase size={22} />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{jobMatches.length}</div>
+              <CardTitle className="mt-2 text-base">Job Matches</CardTitle>
+              <CardContent>{bestMatch ? 'Latest match preview synced from ATS analytics' : 'Waiting for resume analysis'}</CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] items-start">
+            <div className="space-y-8">
+              <Card>
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div>
+                    <CardTitle>Resume Overview</CardTitle>
+                    <CardContent>
+                      {resume ? `Analyzed resume: ${resume.fileName || 'Uploaded resume'}` : 'Upload a resume to generate an overview.'}
+                    </CardContent>
                   </div>
-
-                  {atsScore >= 80 ? (
-                    <div className="flex items-start gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                      <CheckCircle size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-semibold text-green-400">Well optimized for ATS</div>
-                        <p className="text-sm text-green-400/70">Your resume is highly optimized. Focus on applying!</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                      <AlertCircle size={20} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-semibold text-yellow-400">Optimize your resume</div>
-                        <p className="text-sm text-yellow-400/70">Implement suggestions to improve ATS compatibility.</p>
-                      </div>
+                  {currentATS.analyzedAt && (
+                    <div className="text-right text-xs text-muted">
+                      <div>Last analyzed</div>
+                      <div className="text-foreground">{new Date(currentATS.analyzedAt).toLocaleString()}</div>
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText size={48} className="text-muted mx-auto mb-4 opacity-50" />
-                  <p className="text-muted mb-4">No resume uploaded yet</p>
-                  <Button variant="primary" onClick={() => navigate('/resume-builder')}>
-                    Upload Resume
-                  </Button>
-                </div>
-              )}
-            </Card>
 
-            {/* Two Column Layout */}
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Precision Job Matches */}
-              <Card>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                    <Briefcase size={20} className="text-white" />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-border bg-tertiary/60 p-4">
+                    <div className="mb-2 text-sm font-semibold text-foreground">Strengths</div>
+                    <div className="flex flex-wrap gap-2">
+                      {(currentATS.strengths.length > 0 ? currentATS.strengths : ['Profile and content analysis completed']).map((item) => (
+                        <span key={item} className="rounded-full border border-border px-3 py-1 text-xs text-muted">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <CardTitle>Precision Job Matches</CardTitle>
+
+                  <div className="rounded-xl border border-border bg-tertiary/60 p-4">
+                    <div className="mb-2 text-sm font-semibold text-foreground">Areas to improve</div>
+                    <div className="flex flex-wrap gap-2">
+                      {(currentATS.missingAreas.length > 0 ? currentATS.missingAreas : ['No gaps identified']).map((item) => (
+                        <span key={item} className="rounded-full border border-border px-3 py-1 text-xs text-muted">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="grid gap-8 lg:grid-cols-2">
+                <Card>
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      <Sparkles size={18} />
+                    </div>
+                    <CardTitle className="text-xl">Quick Recommendations</CardTitle>
+                  </div>
+
+                  <div className="space-y-3">
+                    {currentATS.recommendations.length > 0 ? (
+                      currentATS.recommendations.slice(0, 5).map((recommendation) => (
+                        <div key={recommendation} className="flex items-start gap-3 rounded-xl border border-border bg-tertiary/50 px-4 py-3 text-sm text-muted">
+                          <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-accent" />
+                          <span>{recommendation}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-border bg-tertiary/50 px-4 py-3 text-sm text-muted">
+                        Recommendations appear after ATS analysis.
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                <Card>
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/15 text-accent">
+                      <Sparkles size={18} />
+                    </div>
+                    <CardTitle className="text-xl">Top Extracted Skills</CardTitle>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {currentATS.topSkills.length > 0 ? (
+                      currentATS.topSkills.map((skill) => (
+                        <span key={skill} className="rounded-full border border-border bg-tertiary/60 px-3 py-1 text-xs text-foreground">
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-muted">Upload a resume to extract normalized skills.</span>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <Card>
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <CardTitle className="text-xl">Top Match Preview</CardTitle>
+                    <CardContent>Synced from the server-side job match engine</CardContent>
+                  </div>
+                  {bestMatch && (
+                    <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+                      {bestMatch.matchScore?.matchPercentage ?? 0}%
+                    </span>
+                  )}
                 </div>
 
-                <div className="space-y-4">
-                  {jobMatches.map((job) => (
-                    <div
-                      key={job._id}
-                      className="p-4 border border-border rounded-lg hover:bg-tertiary transition"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="font-semibold text-foreground">{job.title}</div>
-                          <div className="text-sm text-muted">{job.company}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-primary">
-                            {job.matchScore.overall}%
-                          </div>
-                          <div className="text-xs text-muted">Match</div>
+                {bestMatch ? (
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-lg font-semibold text-foreground">{bestMatch.title}</div>
+                      <div className="text-sm text-muted">{bestMatch.company}</div>
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted">
+                        <span>{bestMatch.location}</span>
+                        <span>•</span>
+                        <span>{bestMatch.remoteType || bestMatch.locationType}</span>
+                        <span>•</span>
+                        <span>{bestMatch.employmentType}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-xl border border-border bg-tertiary/50 p-3 text-center">
+                        <div className="text-lg font-bold text-foreground">{bestMatch.matchScore?.confidence ?? 0}%</div>
+                        <div className="text-xs text-muted">Confidence</div>
+                      </div>
+                      <div className="rounded-xl border border-border bg-tertiary/50 p-3 text-center">
+                        <div className="text-lg font-bold text-foreground">{bestMatch.matchScore?.technicalAlignment ?? 0}%</div>
+                        <div className="text-xs text-muted">Technical fit</div>
+                      </div>
+                      <div className="rounded-xl border border-border bg-tertiary/50 p-3 text-center">
+                        <div className="text-lg font-bold text-foreground">{bestMatch.matchScore?.resumeCompleteness ?? 0}%</div>
+                        <div className="text-xs text-muted">Resume health</div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-tertiary/40 px-4 py-3 text-sm text-muted">
+                      {bestMatch.matchScore?.summary?.[0] || bestMatch.matchScore?.explanation?.[0] || 'Match analytics ready.'}
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="rounded-xl border border-border bg-tertiary/40 p-4">
+                        <div className="mb-2 text-sm font-semibold text-foreground">Matched skills</div>
+                        <div className="flex flex-wrap gap-2">
+                          {(bestMatch.matchScore?.matchedSkills || []).slice(0, 4).map((skill) => (
+                            <span key={skill} className="rounded-full border border-border px-3 py-1 text-xs text-muted">
+                              {skill}
+                            </span>
+                          ))}
                         </div>
                       </div>
-                      <div className="text-xs text-muted mb-3">{job.location}</div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => navigate(`/job-match/${job._id}`)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  ))}
-                </div>
 
-                <Button
-                  variant="outline"
-                  className="w-full mt-4"
-                  onClick={() => navigate('/jobs')}
-                >
-                  View All Matches
-                </Button>
+                      <div className="rounded-xl border border-border bg-tertiary/40 p-4">
+                        <div className="mb-2 text-sm font-semibold text-foreground">Missing skills</div>
+                        <div className="flex flex-wrap gap-2">
+                          {(bestMatch.matchScore?.missingSkills || []).slice(0, 4).map((skill) => (
+                            <span key={skill} className="rounded-full border border-border px-3 py-1 text-xs text-muted">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button variant="primary" className="w-full" onClick={() => navigate(`/job-match/${bestMatch._id}`)}>
+                      View Full Match Details
+                      <ArrowRight size={16} className="ml-2" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-tertiary/40 px-6 py-12 text-center">
+                    <Briefcase size={40} className="mb-3 text-muted opacity-50" />
+                    <p className="text-sm text-muted">Best match preview appears after resume analysis.</p>
+                  </div>
+                )}
               </Card>
 
-              {/* Match Trend */}
               <Card>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                    <TrendingUp size={20} className="text-white" />
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                    <Upload size={18} />
                   </div>
-                  <CardTitle>Match Trend</CardTitle>
+                  <CardTitle className="text-xl">Current Upload State</CardTitle>
                 </div>
 
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={matchData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
-                    <XAxis dataKey="month" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#2a2a2a',
-                        border: '1px solid #404040',
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="matches"
-                      stroke="#e07856"
-                      strokeWidth={2}
-                      dot={{ fill: '#e07856' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="space-y-3 text-sm text-muted">
+                  <div className="flex items-center justify-between rounded-xl border border-border bg-tertiary/40 px-4 py-3">
+                    <span>Latest resume</span>
+                    <span className="text-foreground">{resume?.fileName || 'None uploaded'}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-border bg-tertiary/40 px-4 py-3">
+                    <span>Profile completeness</span>
+                    <span className="text-foreground">{currentATS.profileCompletion || 0}/5</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-border bg-tertiary/40 px-4 py-3">
+                    <span>Recommendations</span>
+                    <span className="text-foreground">{currentATS.recommendations.length}</span>
+                  </div>
+                </div>
               </Card>
             </div>
+          </div>
+        </>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-border bg-secondary/60 px-6 py-12 text-center text-muted">
+          Upload a resume to view ATS score, recommendations, and match preview.
+        </div>
+      )}
     </div>
   )
 }

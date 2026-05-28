@@ -32,17 +32,25 @@ const upload = multer({
   },
 })
 
-// Get all resumes for user
+const buildResumeResponse = (resume) => {
+  const plainResume = typeof resume?.toObject === 'function' ? resume.toObject() : resume
+  const atsAnalytics = plainResume?.atsAnalytics || calculateATSScore(plainResume || {})
+
+  return {
+    ...plainResume,
+    atsAnalytics,
+  }
+}
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const resumes = await Resume.find({ userId: req.user.userId }).sort({ createdAt: -1 })
-    res.json(resumes)
+    res.json(resumes.map((resume) => buildResumeResponse(resume)))
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch resumes', error: err.message })
   }
 })
 
-// Clear all resumes for user
 router.delete('/', authenticateToken, async (req, res) => {
   try {
     const [deleteResult] = await Promise.all([
@@ -59,20 +67,18 @@ router.delete('/', authenticateToken, async (req, res) => {
   }
 })
 
-// Get single resume
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const resume = await Resume.findById(req.params.id)
     if (!resume || resume.userId.toString() !== req.user.userId) {
       return res.status(404).json({ message: 'Resume not found' })
     }
-    res.json(resume)
+    res.json(buildResumeResponse(resume))
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch resume', error: err.message })
   }
 })
 
-// Create/Update resume from uploaded file
 router.post('/upload', authenticateToken, (req, res) => {
   upload.single('resume')(req, res, async (err) => {
     if (err) {
@@ -107,8 +113,12 @@ router.post('/upload', authenticateToken, (req, res) => {
         certifications: resumeData.certifications || [],
         atsScore: {
           score: atsData.score,
-          feedback: atsData.feedback,
-          keywordMatches: atsData.keywords,
+          feedback: atsData.recommendations,
+          keywordMatches: atsData.keywordMatches,
+          lastCalculated: new Date(),
+        },
+        atsAnalytics: {
+          ...atsData,
           lastCalculated: new Date(),
         },
         extractedContent: {
@@ -122,11 +132,12 @@ router.post('/upload', authenticateToken, (req, res) => {
       await resume.save()
 
       res.status(201).json({
-        resume,
+        resume: buildResumeResponse(resume),
         parsedResume: resumeData,
         resumeData,
         atsScore: atsData.score,
-        feedback: atsData.feedback,
+        feedback: atsData.recommendations,
+        atsAnalytics: atsData,
       })
     } catch (error) {
       res.status(500).json({ message: 'Resume upload failed', error: error.message })
@@ -134,7 +145,6 @@ router.post('/upload', authenticateToken, (req, res) => {
   })
 })
 
-// Update resume
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const resume = await Resume.findById(req.params.id)
@@ -183,20 +193,23 @@ router.put('/:id', authenticateToken, async (req, res) => {
       })
       resume.atsScore = {
         score: atsData.score,
-        feedback: atsData.feedback,
-        keywordMatches: atsData.keywords,
+        feedback: atsData.recommendations,
+        keywordMatches: atsData.keywordMatches,
+        lastCalculated: new Date(),
+      }
+      resume.atsAnalytics = {
+        ...atsData,
         lastCalculated: new Date(),
       }
     }
 
     await resume.save()
-    res.json(resume)
+    res.json(buildResumeResponse(resume))
   } catch (err) {
     res.status(500).json({ message: 'Failed to update resume', error: err.message })
   }
 })
 
-// Delete resume
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const resume = await Resume.findById(req.params.id)
