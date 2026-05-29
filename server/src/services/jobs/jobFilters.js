@@ -1,4 +1,5 @@
 import { normalizeSkillText, normalizeSkills } from '../../utils/normalizeSkills.js'
+import { toCanonicalJob } from '../../utils/jobTransforms.js'
 
 const normalizeRange = (value) => {
   if (!value) return null
@@ -18,19 +19,19 @@ const normalizeRange = (value) => {
 }
 
 const getJobText = (job) => {
+  const canonicalJob = toCanonicalJob(job)
   const values = [
-    job.title,
-    job.company,
-    job.location,
-    job.remoteType,
-    job.locationType,
-    job.description,
-    job.category,
-    job.jobCategory,
-    job.employmentType,
-    ...(Array.isArray(job.requiredSkills) ? job.requiredSkills : []),
-    ...(Array.isArray(job.preferredSkills) ? job.preferredSkills : []),
-    ...(Array.isArray(job.responsibilities) ? job.responsibilities : []),
+    canonicalJob.title,
+    canonicalJob.company,
+    canonicalJob.location,
+    canonicalJob.remoteType,
+    canonicalJob.description,
+    canonicalJob.category,
+    canonicalJob.employmentType,
+    ...(Array.isArray(canonicalJob.requiredSkills) ? canonicalJob.requiredSkills : []),
+    ...(Array.isArray(canonicalJob.preferredSkills) ? canonicalJob.preferredSkills : []),
+    ...(Array.isArray(canonicalJob.extractedSkills) ? canonicalJob.extractedSkills : []),
+    ...(Array.isArray(canonicalJob.responsibilities) ? canonicalJob.responsibilities : []),
   ]
 
   return values.filter(Boolean).join(' ').toLowerCase()
@@ -39,9 +40,11 @@ const getJobText = (job) => {
 const matchesSkillKeywords = (job, searchSkills) => {
   if (searchSkills.length === 0) return true
 
+  const canonicalJob = toCanonicalJob(job)
   const jobSkills = normalizeSkills([
-    ...(Array.isArray(job.requiredSkills) ? job.requiredSkills : []),
-    ...(Array.isArray(job.preferredSkills) ? job.preferredSkills : []),
+    ...(Array.isArray(canonicalJob.requiredSkills) ? canonicalJob.requiredSkills : []),
+    ...(Array.isArray(canonicalJob.preferredSkills) ? canonicalJob.preferredSkills : []),
+    ...(Array.isArray(canonicalJob.extractedSkills) ? canonicalJob.extractedSkills : []),
   ]).map((skill) => skill.toLowerCase())
 
   return searchSkills.every((skill) => jobSkills.includes(skill.toLowerCase()))
@@ -50,8 +53,9 @@ const matchesSkillKeywords = (job, searchSkills) => {
 const matchesSalary = (job, salaryRange) => {
   if (!salaryRange) return true
 
-  const jobMin = Number(job.salary?.min || job.salaryRange?.min || 0)
-  const jobMax = Number(job.salary?.max || job.salaryRange?.max || 0)
+  const canonicalJob = toCanonicalJob(job)
+  const jobMin = Number(canonicalJob.salaryRange?.min || canonicalJob.salary?.min || 0)
+  const jobMax = Number(canonicalJob.salaryRange?.max || canonicalJob.salary?.max || 0)
 
   if (salaryRange.min && jobMax < salaryRange.min) return false
   if (salaryRange.max && jobMin > salaryRange.max) return false
@@ -62,8 +66,9 @@ const matchesSalary = (job, salaryRange) => {
 const matchesExperience = (job, experienceRange) => {
   if (!experienceRange) return true
 
-  const jobMin = Number(job.experience?.min || job.experienceLevel?.min || 0)
-  const jobMax = Number(job.experience?.max || job.experienceLevel?.max || jobMin)
+  const canonicalJob = toCanonicalJob(job)
+  const jobMin = Number(canonicalJob.experienceLevel?.min || canonicalJob.experience?.min || 0)
+  const jobMax = Number(canonicalJob.experienceLevel?.max || canonicalJob.experience?.max || jobMin)
 
   if (experienceRange.min && jobMax < experienceRange.min) return false
   if (experienceRange.max && jobMin > experienceRange.max) return false
@@ -74,14 +79,14 @@ const matchesExperience = (job, experienceRange) => {
 const matchesRemoteType = (job, remoteType) => {
   if (!remoteType) return true
 
-  const jobRemote = normalizeSkillText(job.remoteType || job.locationType || '').replace(/[^a-z\s]/g, '')
+  const jobRemote = normalizeSkillText(toCanonicalJob(job).remoteType || '').replace(/[^a-z\s]/g, '')
   return jobRemote.includes(normalizeSkillText(remoteType))
 }
 
 const matchesCategory = (job, category) => {
   if (!category) return true
 
-  const jobCategory = normalizeSkillText(job.category || job.jobCategory || '')
+  const jobCategory = normalizeSkillText(toCanonicalJob(job).category || '')
   return jobCategory.includes(normalizeSkillText(category))
 }
 
@@ -98,7 +103,7 @@ const matchesSearch = (job, search) => {
 const matchesLocation = (job, location) => {
   if (!location) return true
 
-  const jobLocation = normalizeSkillText(job.location || '')
+  const jobLocation = normalizeSkillText(toCanonicalJob(job).location || '')
   return jobLocation.includes(normalizeSkillText(location))
 }
 

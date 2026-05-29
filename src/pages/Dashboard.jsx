@@ -5,6 +5,7 @@ import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
 import { clearPersistedResumeData, useResumeBuilderStore } from '../store/resumeBuilderStore'
+import { getApiErrorMessage, unwrapApiResponse } from '../lib/apiResponse'
 import {
   AlertCircle,
   ArrowRight,
@@ -79,10 +80,10 @@ export default function Dashboard() {
         axios.get('/api/jobs/matches?limit=3', { headers }),
       ])
 
-      const latestResume = resumeRes.data?.[0] || null
+      const latestResume = unwrapApiResponse(resumeRes.data, ['resumes'])?.[0] || null
       setResume(latestResume)
       setAtsAnalytics(latestResume?.atsAnalytics || buildLegacyAnalytics(latestResume))
-      setJobMatches(matchRes.data?.matches || [])
+      setJobMatches(unwrapApiResponse(matchRes.data, ['matches'])?.matches || [])
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
       setJobMatches([])
@@ -132,7 +133,7 @@ export default function Dashboard() {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
-      const uploadedResume = response.data?.resume || null
+      const uploadedResume = unwrapApiResponse(response.data, ['resume'])?.resume || response.data?.resume || null
       if (uploadedResume) {
         setResume(uploadedResume)
         setAtsAnalytics(uploadedResume.atsAnalytics || response.data?.atsAnalytics || null)
@@ -143,9 +144,9 @@ export default function Dashboard() {
       const matchResponse = await axios.get('/api/jobs/matches?limit=3', {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
-      setJobMatches(matchResponse.data?.matches || [])
+      setJobMatches(unwrapApiResponse(matchResponse.data, ['matches'])?.matches || [])
     } catch (error) {
-      setUploadError(error.response?.data?.message || 'Resume upload failed. Please try again.')
+      setUploadError(getApiErrorMessage(error, 'Resume upload failed. Please try again.'))
     } finally {
       setIsUploading(false)
     }
@@ -180,7 +181,7 @@ export default function Dashboard() {
         fileInputRef.current.value = ''
       }
     } catch (error) {
-      setUploadError(error.response?.data?.message || 'Failed to clear resume data. Please try again.')
+      setUploadError(getApiErrorMessage(error, 'Failed to clear resume data. Please try again.'))
     }
   }
 

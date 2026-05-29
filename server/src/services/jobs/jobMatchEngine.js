@@ -1,4 +1,5 @@
 import { normalizeSkills } from '../../utils/normalizeSkills.js'
+import { toCanonicalJob } from '../../utils/jobTransforms.js'
 
 const toNumber = (value, fallback = 0) => {
   const number = Number(value)
@@ -13,10 +14,11 @@ const getResumeSkills = (resume, atsAnalytics) => {
 }
 
 const getJobSkills = (job) => {
+  const canonicalJob = toCanonicalJob(job)
   return unique(
     normalizeSkills([
-      ...(Array.isArray(job.requiredSkills) ? job.requiredSkills : []),
-      ...(Array.isArray(job.preferredSkills) ? job.preferredSkills : []),
+      ...(Array.isArray(canonicalJob.requiredSkills) ? canonicalJob.requiredSkills : []),
+      ...(Array.isArray(canonicalJob.preferredSkills) ? canonicalJob.preferredSkills : []),
     ]).map((skill) => skill.toLowerCase())
   )
 }
@@ -123,8 +125,9 @@ const buildExplanation = ({ strengths, weaknesses, matchedRequired, missingRequi
 export const calculateJobMatch = (resume = {}, job = {}, context = {}) => {
   const atsAnalytics = context.atsAnalytics || resume.atsAnalytics || null
   const resumeSkills = getResumeSkills(resume, atsAnalytics)
-  const requiredSkills = getJobSkills({ requiredSkills: job.requiredSkills || [] })
-  const preferredSkills = getJobSkills({ requiredSkills: job.preferredSkills || [] })
+  const canonicalJob = toCanonicalJob(job)
+  const requiredSkills = getJobSkills({ requiredSkills: canonicalJob.requiredSkills || [] })
+  const preferredSkills = getJobSkills({ preferredSkills: canonicalJob.preferredSkills || [] })
 
   const matchedRequired = overlap(requiredSkills, resumeSkills)
   const matchedPreferred = overlap(preferredSkills, resumeSkills)

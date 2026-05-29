@@ -2,6 +2,15 @@ import mongoose from 'mongoose'
 
 const jobSchema = new mongoose.Schema(
   {
+    source: {
+      type: String,
+      required: true,
+      default: 'manual',
+    },
+    sourceUrl: {
+      type: String,
+      default: '',
+    },
     title: {
       type: String,
       required: true,
@@ -10,7 +19,17 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    companyNormalized: {
+      type: String,
+      default: '',
+      index: true,
+    },
     location: String,
+    locationNormalized: {
+      type: String,
+      default: '',
+      index: true,
+    },
     remoteType: {
       type: String,
       enum: ['Remote', 'On-site', 'Hybrid'],
@@ -31,14 +50,18 @@ const jobSchema = new mongoose.Schema(
     description: String,
     requiredSkills: [String],
     preferredSkills: [String],
+    extractedSkills: {
+      type: [String],
+      default: [],
+    },
     salary: {
       min: Number,
       max: Number,
       currency: { type: String, default: 'USD' },
     },
     salaryRange: {
-      min: Number,
-      max: Number,
+      min: { type: Number, default: null },
+      max: { type: Number, default: null },
       currency: { type: String, default: 'USD' },
     },
     experience: {
@@ -46,8 +69,8 @@ const jobSchema = new mongoose.Schema(
       max: Number,
     },
     experienceLevel: {
-      min: Number,
-      max: Number,
+      min: { type: Number, default: null },
+      max: { type: Number, default: null },
     },
     jobLevel: String,
     jobCategory: String,
@@ -69,5 +92,8 @@ const jobSchema = new mongoose.Schema(
   },
   { timestamps: true }
 )
+
+jobSchema.index({ sourceUrl: 1 })
+jobSchema.index({ companyNormalized: 1, locationNormalized: 1, title: 1 })
 
 export default mongoose.model('Job', jobSchema)

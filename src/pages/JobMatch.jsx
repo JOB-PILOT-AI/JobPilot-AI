@@ -5,6 +5,7 @@ import { CheckCircle, AlertCircle, Building, MapPin, DollarSign, RefreshCcw, Arr
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
+import { getApiErrorMessage, unwrapApiResponse } from '../lib/apiResponse'
 
 const Pill = ({ children, tone = 'neutral' }) => {
   const styles = {
@@ -37,9 +38,9 @@ export default function JobMatch() {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
 
-      setJob(response.data)
+      setJob(unwrapApiResponse(response.data, ['job', 'matchData']))
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Failed to load job match details.')
+      setError(getApiErrorMessage(requestError, 'Failed to load job match details.'))
       setJob(null)
     } finally {
       setIsLoading(false)

@@ -6,43 +6,44 @@ import { authenticateToken, authenticateOptional } from '../middleware/auth.js'
 import { applyJobFilters, normalizeJobFilters } from '../services/jobs/jobFilters.js'
 import { calculateJobMatch } from '../services/jobs/jobMatchEngine.js'
 import { calculateATSScore } from '../services/atsScoring.js'
+import { buildErrorResponse, buildSuccessResponse } from '../utils/apiResponses.js'
+import { dedupeJobs } from '../services/jobs/detectDuplicate.js'
+import { ingestJob } from '../services/jobs/ingestJob.js'
+import { toCanonicalJob } from '../utils/jobTransforms.js'
 
 const router = express.Router()
 
-const serializeJob = (job, matchData = null) => ({
-  id: job._id,
-  _id: job._id,
-  title: job.title,
-  company: job.company,
-  location: job.location,
-  remoteType: job.remoteType || job.locationType || 'Hybrid',
-  locationType: job.locationType || job.remoteType || 'Hybrid',
-  salaryRange: job.salaryRange || job.salary || { min: 0, max: 0, currency: 'USD' },
-  salary: job.salary || job.salaryRange || { min: 0, max: 0, currency: 'USD' },
-  experienceLevel: job.experienceLevel || job.experience || { min: 0, max: 0 },
-  experience: job.experience || job.experienceLevel || { min: 0, max: 0 },
-  employmentType: job.employmentType || 'Full-time',
-  category: job.category || job.jobCategory || 'Engineering',
-  jobCategory: job.jobCategory || job.category || 'Engineering',
-  responsibilities: Array.isArray(job.responsibilities) ? job.responsibilities : [],
-  description: job.description,
-  requiredSkills: Array.isArray(job.requiredSkills) ? job.requiredSkills : [],
-  preferredSkills: Array.isArray(job.preferredSkills) ? job.preferredSkills : [],
-  postedAt: job.postedAt || job.createdAt,
-  companyDescription: job.companyDescription || '',
-  matchScore: matchData,
-})
+const serializeJob = (job, matchData = null) => {
+  const canonicalJob = toCanonicalJob(job)
+
+  return {
+    ...canonicalJob,
+    _id: job._id || canonicalJob.id,
+    id: canonicalJob.id || String(job._id || ''),
+    salary: job.salary || canonicalJob.salaryRange,
+    experience: job.experience || canonicalJob.experienceLevel,
+    locationType: job.locationType || canonicalJob.remoteType,
+    jobCategory: job.jobCategory || canonicalJob.category,
+    companyDescription: job.companyDescription || '',
+    matchScore: matchData,
+    isActive: job.isActive !== undefined ? job.isActive : true,
+  }
+}
 
 router.get('/', authenticateOptional, async (req, res) => {
   try {
-    const jobs = await Job.find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .limit(50)
+    const jobs = dedupeJobs(
+      await Job.find({ isActive: true })
+        .sort({ updatedAt: -1, createdAt: -1 })
+        .limit(100)
+    )
 
     const filteredJobs = applyJobFilters(jobs, normalizeJobFilters(req.query))
-    res.json(filteredJobs.map((job) => serializeJob(job)))
+    const serializedJobs = filteredJobs.map((job) => serializeJob(job))
+
+    res.json(buildSuccessResponse(serializedJobs, { jobs: serializedJobs }))
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch jobs', error: err.message })
+    res.status(500).json(buildErrorResponse('Failed to fetch jobs', { error: err.message }))
   }
 })
 
@@ -52,11 +53,20 @@ router.get('/matches', authenticateToken, async (req, res) => {
     const resume = await Resume.findOne({ userId: req.user.userId }).sort({ updatedAt: -1 })
 
     if (!resume) {
-      return res.json({ resume: null, atsAnalytics: null, bestMatch: null, matches: [] })
+      return res.json(
+        buildSuccessResponse(
+          { resume: null, atsAnalytics: null, bestMatch: null, matches: [] },
+          { resumeId: null, atsAnalytics: null, bestMatch: null, matches: [] }
+        )
+      )
     }
 
     const atsAnalytics = resume.atsAnalytics || calculateATSScore(resume.toObject())
-    const jobs = await Job.find({ isActive: true }).sort({ createdAt: -1 }).limit(50)
+    const jobs = dedupeJobs(
+      await Job.find({ isActive: true })
+        .sort({ updatedAt: -1, createdAt: -1 })
+        .limit(100)
+    )
     const matchMap = new Map()
 
     const normalizedMatches = jobs.map((job) => {
@@ -71,43 +81,44 @@ router.get('/matches', authenticateToken, async (req, res) => {
       .sort((left, right) => (right.matchScore?.matchPercentage || 0) - (left.matchScore?.matchPercentage || 0))
       .slice(0, limit)
 
-    res.json({
-      resumeId: resume._id,
-      atsAnalytics,
-      bestMatch: matches[0] || null,
-      matches,
-    })
+    res.json(
+      buildSuccessResponse(
+        {
+          resumeId: resume._id,
+          atsAnalytics,
+          bestMatch: matches[0] || null,
+          matches,
+        },
+        {
+          resumeId: resume._id,
+          atsAnalytics,
+          bestMatch: matches[0] || null,
+          matches,
+        }
+      )
+    )
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch job matches', error: err.message })
+    res.status(500).json(buildErrorResponse('Failed to fetch job matches', { error: err.message }))
   }
 })
 
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const {
-      title,
-      company,
-      location,
-      description,
-      requiredSkills,
-      salary,
-      experience,
-    } = req.body
+    const result = await ingestJob(req.body, { persist: true, source: req.body.source || 'manual' })
 
-    const job = new Job({
-      title,
-      company,
-      location,
-      description,
-      requiredSkills,
-      salary,
-      experience,
-    })
+    if (!result.success) {
+      return res.status(400).json(result)
+    }
 
-    await job.save()
-    res.status(201).json(job)
+    res.status(result.created ? 201 : 200).json(
+      buildSuccessResponse(result.data, {
+        job: result.data,
+        duplicate: Boolean(result.duplicate),
+        created: Boolean(result.created),
+      })
+    )
   } catch (err) {
-    res.status(500).json({ message: 'Failed to create job', error: err.message })
+    res.status(500).json(buildErrorResponse('Failed to create job', { error: err.message }))
   }
 })
 
@@ -117,12 +128,12 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
     const job = await Job.findById(req.params.id)
 
     if (!job) {
-      return res.status(404).json({ message: 'Job not found' })
+      return res.status(404).json(buildErrorResponse('Job not found'))
     }
 
     const resume = await Resume.findById(resumeId)
     if (!resume || resume.userId.toString() !== req.user.userId) {
-      return res.status(404).json({ message: 'Resume not found' })
+      return res.status(404).json(buildErrorResponse('Resume not found'))
     }
 
     const existingApplication = await Application.findOne({
@@ -131,7 +142,7 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
     })
 
     if (existingApplication) {
-      return res.status(400).json({ message: 'Already applied to this job' })
+      return res.status(400).json(buildErrorResponse('Already applied to this job'))
     }
 
     const atsAnalytics = resume.atsAnalytics || calculateATSScore(resume.toObject())
@@ -155,9 +166,9 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
     })
 
     await application.save()
-    res.status(201).json(application)
+    res.status(201).json(buildSuccessResponse(application, { application }))
   } catch (err) {
-    res.status(500).json({ message: 'Failed to apply for job', error: err.message })
+    res.status(500).json(buildErrorResponse('Failed to apply for job', { error: err.message }))
   }
 })
 
@@ -167,9 +178,9 @@ router.get('/user/applications', authenticateToken, async (req, res) => {
       .populate('jobId')
       .populate('resumeId')
 
-    res.json(applications)
+    res.json(buildSuccessResponse(applications, { applications }))
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch applications', error: err.message })
+    res.status(500).json(buildErrorResponse('Failed to fetch applications', { error: err.message }))
   }
 })
 
@@ -177,7 +188,7 @@ router.get('/:id', authenticateOptional, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id)
     if (!job) {
-      return res.status(404).json({ message: 'Job not found' })
+      return res.status(404).json(buildErrorResponse('Job not found'))
     }
 
     let matchData = null
@@ -189,9 +200,10 @@ router.get('/:id', authenticateOptional, async (req, res) => {
       }
     }
 
-    res.json({ job: serializeJob(job), matchData })
+    const serializedJob = serializeJob(job, matchData)
+    res.json(buildSuccessResponse({ job: serializedJob, matchData }, { job: serializedJob, matchData }))
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch job', error: err.message })
+    res.status(500).json(buildErrorResponse('Failed to fetch job', { error: err.message }))
   }
 })
 

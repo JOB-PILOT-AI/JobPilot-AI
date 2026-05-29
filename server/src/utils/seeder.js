@@ -1,4 +1,5 @@
 import Job from '../models/Job.js'
+import { ingestJob } from '../services/jobs/ingestJob.js'
 
 export const seedJobs = async () => {
   const jobCount = await Job.countDocuments()
@@ -136,7 +137,9 @@ export const seedJobs = async () => {
   ]
 
   try {
-    await Job.insertMany(dummyJobs)
+    for (const job of dummyJobs) {
+      await ingestJob({ ...job, source: 'seed' }, { persist: true, source: 'seed' })
+    }
     console.log('✓ Jobs seeded successfully')
   } catch (err) {
     console.error('Failed to seed jobs:', err)

@@ -6,6 +6,7 @@ import { Card, CardContent, CardTitle } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { useAuthStore } from '../store/authStore'
+import { getApiErrorMessage, unwrapApiResponse } from '../lib/apiResponse'
 
 const EMPTY_FILTERS = {
   search: '',
@@ -71,17 +72,19 @@ export default function Jobs() {
         matchesUrl ? axios.get(matchesUrl, { headers }) : Promise.resolve({ data: { matches: [] } }),
       ])
 
-      const matchMap = new Map((matchesRes.data?.matches || []).map((job) => [String(job._id), job.matchScore]))
+      const jobsPayload = unwrapApiResponse(jobsRes.data, ['jobs'])
+      const matchesPayload = unwrapApiResponse(matchesRes.data, ['matches'])
+      const matchMap = new Map(((matchesPayload?.matches || [])).map((job) => [String(job._id), job.matchScore]))
 
       setJobs(
-        (jobsRes.data || []).map((job) => ({
+        (jobsPayload || []).map((job) => ({
           ...job,
           matchScore: matchMap.get(String(job._id)) || job.matchScore || null,
         }))
       )
     } catch (requestError) {
       setJobs([])
-      setError(requestError.response?.data?.message || 'Failed to load jobs.')
+      setError(getApiErrorMessage(requestError, 'Failed to load jobs.'))
     } finally {
       setIsLoading(false)
     }
