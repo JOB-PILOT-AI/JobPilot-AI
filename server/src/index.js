@@ -34,10 +34,13 @@ mongoose
   .connect(MONGODB_URI)
   .then(async () => {
     console.log(' Connected to MongoDB successfully')
-    await seedJobs()
+
+    if (process.env.NODE_ENV !== 'production') {
+      await seedJobs()
+    }
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message)
+    console.error('MongoDB connection error:', err.message)
     console.error('Full error:', err)
   })
 

@@ -9,6 +9,7 @@ import { calculateATSScore } from '../services/atsScoring.js'
 import { buildErrorResponse, buildSuccessResponse } from '../utils/apiResponses.js'
 import { dedupeJobs } from '../services/jobs/detectDuplicate.js'
 import { ingestJob } from '../services/jobs/ingestJob.js'
+import { importRemoteOKJobs } from '../services/jobs/importRemoteOKJobs.js'
 import { toCanonicalJob } from '../utils/jobTransforms.js'
 
 const router = express.Router()
@@ -119,6 +120,21 @@ router.post('/', authenticateToken, async (req, res) => {
     )
   } catch (err) {
     res.status(500).json(buildErrorResponse('Failed to create job', { error: err.message }))
+  }
+})
+
+router.get('/import/remoteok', authenticateToken, async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 50))
+    const result = await importRemoteOKJobs({ limit })
+
+    res.json(result)
+  } catch (err) {
+    res.status(200).json({
+      success: true,
+      imported: 0,
+      skipped: 0,
+    })
   }
 })
 
