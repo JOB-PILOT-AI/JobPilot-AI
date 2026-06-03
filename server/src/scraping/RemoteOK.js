@@ -5,67 +5,69 @@ import { extractSkillsFromText, normalizeSkills } from '../utils/normalizeSkills
 const REMOTEOK_BASE_URL = 'https://remoteok.com'
 const MAX_REMOTEOK_JOBS = 50
 const REQUEST_TIMEOUT_MS = 15000
-
 const REJECT_KEYWORDS = [
   'sales',
   'marketing',
   'hr',
   'human resources',
   'recruiter',
+  'recruiting',
+  'talent acquisition',
   'customer support',
+  'customer success',
   'business development',
+  'account executive',
   'account manager',
-]
-
-const KEEP_KEYWORDS = [
-  'software engineer',
-  'frontend',
-  'front end',
-  'backend',
-  'back end',
-  'full stack',
-  'react',
-  'node',
-  'javascript',
-  'typescript',
-  'python',
-  'devops',
-  'cloud',
-  'data engineering',
-  'machine learning',
-  'ml engineer',
-  'ai engineer',
-  'developer',
-  'engineer',
-  'software',
+  'operations manager',
+  'finance',
+  'legal',
+  'content writer',
+  'copywriter',
 ]
 
 const TECH_TITLE_KEYWORDS = [
   'software engineer',
-  'frontend',
-  'front end',
-  'backend',
-  'back end',
-  'full stack',
-  'site reliability',
-  'sre',
-  'devops',
-  'developer',
-  'engineer',
-  'software',
-  'solutions architect',
-  'data engineer',
+  'software developer',
+  'full stack developer',
+  'full stack engineer',
+  'frontend engineer',
+  'frontend developer',
+  'front end engineer',
+  'front end developer',
+  'backend engineer',
+  'backend developer',
+  'back end engineer',
+  'back end developer',
+  'react developer',
+  'react engineer',
+  'node developer',
+  'node engineer',
+  'javascript developer',
+  'typescript developer',
+  'web developer',
   'platform engineer',
+  'cloud engineer',
+  'infrastructure engineer',
+  'site reliability engineer',
+  'sre',
+  'devops engineer',
   'security engineer',
+  'cybersecurity engineer',
   'machine learning engineer',
-  'ml engineer',
   'ai engineer',
+  'data engineer',
+  'data platform engineer',
+  'analytics engineer',
   'mobile engineer',
-  'react',
-  'node',
-  'javascript',
-  'typescript',
-  'python',
+  'android developer',
+  'ios developer',
+  'application engineer',
+  'systems engineer',
+  'staff engineer',
+  'senior engineer',
+  'principal engineer',
+  'engineering manager',
+  'technical lead',
 ]
 
 const TECH_DESCRIPTION_KEYWORDS = [
@@ -73,33 +75,82 @@ const TECH_DESCRIPTION_KEYWORDS = [
   'javascript',
   'node.js',
   'nodejs',
+  'node',
   'python',
+  'java',
+  'golang',
+  'go',
+  'rust',
   'react',
   'next.js',
   'nextjs',
+  'express',
   'kubernetes',
   'docker',
   'aws',
   'gcp',
   'azure',
   'sql',
+  'postgresql',
+  'postgres',
   'api',
   'graphql',
   'microservices',
   'serverless',
   'mcp',
   'mongodb',
-  'postgres',
   'redis',
   'devops',
   'sre',
   'engineering',
   'software development',
+  'data engineering',
   'data pipeline',
   'machine learning',
+  'ml',
+  'ai',
+  'artificial intelligence',
+  'linux',
+  'terraform',
   'ml model',
   'cloud infrastructure',
 ]
+
+const TECH_AMBIGUOUS_TITLE_KEYWORDS = [
+  'engineer',
+  'developer',
+  'software',
+  'technical lead',
+  'lead',
+  'architect',
+  'sre',
+  'devops',
+  'data',
+  'platform',
+  'cloud',
+  'security',
+  'mobile',
+]
+
+const ENGINEERING_AMBIGUOUS_TITLES = [
+  'founding engineer',
+  'product engineer',
+  'solutions engineer',
+  'integration engineer',
+  'automation engineer',
+  'test engineer',
+  'qa engineer',
+  'software engineer',
+  'engineering specialist',
+  'platform specialist',
+  'systems specialist',
+]
+
+const REJECTION_REASONS = {
+  NON_TECH: 'non_technical_role',
+  MISSING_FIELDS: 'missing_required_fields',
+  INSUFFICIENT_SIGNALS: 'insufficient_technical_signals',
+}
 
 const cleanText = (value) => {
   if (typeof value !== 'string') return ''
@@ -288,16 +339,109 @@ const isRejectedJob = (text) => {
   return REJECT_KEYWORDS.some((keyword) => matchesKeyword(text, keyword))
 }
 
-const isDeveloperFocusedJob = ({ title, tags, description }) => {
-  const text = [title, ...(tags || []), description].filter(Boolean).join(' ')
+const countTechnicalSignals = (parts = []) => {
+  const combined = parts.filter(Boolean).join(' ')
+  if (!normalizeSemanticText(combined)) return 0
 
-  if (!normalizeSemanticText(text)) return false
-  if (isRejectedJob([title, ...(tags || [])].filter(Boolean).join(' '))) return false
+  const signals = new Set()
 
-  const titleText = [title, ...(Array.isArray(tags) ? tags : [])].filter(Boolean).join(' ')
-  const descriptionMatches = TECH_DESCRIPTION_KEYWORDS.filter((keyword) => matchesKeyword(description, keyword)).length
+  for (const keyword of TECH_DESCRIPTION_KEYWORDS) {
+    if (matchesKeyword(combined, keyword)) {
+      signals.add(keyword)
+    }
+  }
 
-  return TECH_TITLE_KEYWORDS.some((keyword) => matchesKeyword(titleText, keyword)) || descriptionMatches >= 2
+  return signals.size
+}
+
+const analyzeRemoteOKJob = ({ title, company, tags = [], description = '', sourceUrl = '' }) => {
+  const normalizedTitle = normalizeSemanticText(title)
+  const normalizedCompany = normalizeSemanticText(company)
+  const normalizedTags = tags.map((tag) => normalizeSemanticText(tag)).filter(Boolean)
+
+  const technicalTitleMatched = TECH_TITLE_KEYWORDS.filter((keyword) => matchesKeyword(title, keyword))
+  const ambiguousTitleMatched = TECH_AMBIGUOUS_TITLE_KEYWORDS.filter((keyword) => matchesKeyword(title, keyword))
+  const engineeringAmbiguousMatched = ENGINEERING_AMBIGUOUS_TITLES.filter((keyword) => matchesKeyword(title, keyword))
+
+  const technicalSignalCount = countTechnicalSignals([title, ...tags, description])
+  const tagSignals = normalizedTags.filter((tag) => TECH_DESCRIPTION_KEYWORDS.some((keyword) => matchesKeyword(tag, keyword))).length
+
+  // required fields: preserve existing safety
+  if (!(normalizedTitle && normalizedCompany && sourceUrl)) {
+    return {
+      accepted: false,
+      reason: 'missing_required_fields',
+      technicalSignalCount,
+      tagSignals,
+      technicalTitleMatched,
+      ambiguousTitleMatched,
+      engineeringAmbiguousMatched,
+    }
+  }
+
+  // strict non-technical rejection remains unchanged
+  if (isRejectedJob([title, company, ...tags].filter(Boolean).join(' ')) || isRejectedJob(description)) {
+    return {
+      accepted: false,
+      reason: 'non_technical_role',
+      technicalSignalCount,
+      tagSignals,
+      technicalTitleMatched,
+      ambiguousTitleMatched,
+      engineeringAmbiguousMatched,
+    }
+  }
+
+  // explicit technical titles -> accept immediately
+  if (technicalTitleMatched.length > 0) {
+    return {
+      accepted: true,
+      reason: null,
+      technicalSignalCount,
+      tagSignals,
+      technicalTitleMatched,
+      ambiguousTitleMatched,
+      engineeringAmbiguousMatched,
+    }
+  }
+
+  // STEP 4: For explicitly engineering-related ambiguous phrases, allow lower threshold (>=1 signal or tag)
+  if (engineeringAmbiguousMatched.length > 0 && (technicalSignalCount >= 1 || tagSignals >= 1)) {
+    return {
+      accepted: true,
+      reason: null,
+      technicalSignalCount,
+      tagSignals,
+      technicalTitleMatched,
+      ambiguousTitleMatched,
+      engineeringAmbiguousMatched,
+    }
+  }
+
+  // STEP 3: Accept when technicalSignalCount >= 2 only if title contains engineering terminology OR technical tags exist
+  const titleContainsEngineeringTerm = ambiguousTitleMatched.length > 0
+  if (technicalSignalCount >= 2 && (titleContainsEngineeringTerm || tagSignals >= 1)) {
+    return {
+      accepted: true,
+      reason: null,
+      technicalSignalCount,
+      tagSignals,
+      technicalTitleMatched,
+      ambiguousTitleMatched,
+      engineeringAmbiguousMatched,
+    }
+  }
+
+  // otherwise reject
+  return {
+    accepted: false,
+    reason: 'insufficient_technical_signals',
+    technicalSignalCount,
+    tagSignals,
+    technicalTitleMatched,
+    ambiguousTitleMatched,
+    engineeringAmbiguousMatched,
+  }
 }
 
 const buildFeedJobCandidate = (entry) => {
@@ -407,17 +551,87 @@ export const scrapeRemoteOKJobs = async ({ limit = MAX_REMOTEOK_JOBS } = {}) => 
   })
 
   const feedItems = Array.isArray(feedResponse.data) ? feedResponse.data : []
+  const stats = {
+    rawJobsFetched: feedItems.length,
+    jobsAfterCleanup: 0,
+    jobsAccepted: 0,
+    jobsRejected: 0,
+    rejectedReasons: {},
+  }
+  const rejectionSamples = []
+
   const candidates = feedItems
-    .filter((entry) => entry && typeof entry === 'object' && entry.slug && entry.position && entry.company)
-    .filter((entry) => isDeveloperFocusedJob({ title: entry.position, tags: entry.tags, description: stripHtml(entry.description) }))
-    .map((entry) => buildFeedJobCandidate(entry))
-    .filter((job) => job.title && job.company && job.sourceUrl)
-    .filter((job) => isDeveloperFocusedJob({ title: job.title, description: job.description }))
+    .filter((entry) => entry && typeof entry === 'object')
+    .filter((entry) => {
+      const sourceUrl = toAbsoluteUrl(entry.url || entry.apply_url || (entry.slug ? `${REMOTEOK_BASE_URL}/remote-jobs/${entry.slug}` : ''))
+      const hasEssentialFields = Boolean(cleanText(entry.position) && cleanText(entry.company) && sourceUrl)
+
+      if (!hasEssentialFields) {
+        stats.jobsRejected += 1
+        stats.rejectedReasons.missing_required_fields = (stats.rejectedReasons.missing_required_fields || 0) + 1
+      }
+
+      return hasEssentialFields
+    })
+    .map((entry) => {
+      stats.jobsAfterCleanup += 1
+
+      const job = buildFeedJobCandidate(entry)
+      const analysis = analyzeRemoteOKJob({
+        title: job.title,
+        company: job.company,
+        tags: job.preferredSkills,
+        description: job.description,
+        sourceUrl: job.sourceUrl,
+      })
+
+      if (!analysis.accepted) {
+        stats.jobsRejected += 1
+        stats.rejectedReasons[analysis.reason] = (stats.rejectedReasons[analysis.reason] || 0) + 1
+        if (rejectionSamples.length < 20) {
+          rejectionSamples.push({
+            title: job.title,
+            company: job.company,
+            reason: analysis.reason,
+            technicalSignalCount: analysis.technicalSignalCount,
+            tagSignals: analysis.tagSignals,
+            technicalTitleMatched: analysis.technicalTitleMatched || [],
+            ambiguousTitleMatched: analysis.ambiguousTitleMatched || [],
+            engineeringAmbiguousMatched: analysis.engineeringAmbiguousMatched || [],
+            tags: job.preferredSkills.slice(0, 5),
+            descriptionSnippet: (job.description || '').slice(0, 200),
+          })
+        }
+        return null
+      }
+
+      stats.jobsAccepted += 1
+      return job
+    })
+    .filter(Boolean)
     .slice(0, Math.max(1, Math.min(Number(limit) || MAX_REMOTEOK_JOBS, MAX_REMOTEOK_JOBS)))
 
+  const topRejectionReasons = Object.entries(stats.rejectedReasons)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 3)
+    .map(([reason, count]) => `${reason}: ${count}`)
+
+  console.info('[RemoteOK] Import diagnostics', {
+    rawJobsFetched: stats.rawJobsFetched,
+    jobsAfterCleanup: stats.jobsAfterCleanup,
+    jobsAccepted: stats.jobsAccepted,
+    jobsRejected: stats.jobsRejected,
+    topRejectionReasons,
+  })
+  if (rejectionSamples.length) {
+    console.info('[RemoteOK] Sample rejected jobs (up to 20):', rejectionSamples.slice(0, 20))
+  }
   return candidates
 }
 
 export default {
   scrapeRemoteOKJobs,
 }
+
+// Exports for diagnostic/audit scripts
+export { analyzeRemoteOKJob, buildFeedJobCandidate }
