@@ -1,23 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuthStore } from '../store/authStore'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
-import { Save, Lock, Bell, Shield } from 'lucide-react'
+import { Save, Lock, Bell, Shield, CreditCard, CheckCircle2 } from 'lucide-react'
 
 export default function Settings() {
+  const { user, upgradeToPro } = useAuthStore()
   const [isSaving, setIsSaving] = useState(false)
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john@example.com',
-    location: 'San Francisco, CA',
-    title: 'Senior Engineer',
+    name: user?.name || '',
+    email: user?.email || '',
+    location: user?.location || '',
+    title: user?.currentRole || '',
   })
+
+  const [isUpgrading, setIsUpgrading] = useState(false)
+  const [plan, setPlan] = useState(user?.plan || 'Free')
+  const [upgradeMessage, setUpgradeMessage] = useState('')
 
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     jobAlerts: true,
     applicationUpdates: true,
   })
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.name || '',
+        email: user.email || '',
+        location: user.location || '',
+        title: user.currentRole || '',
+      })
+      setPlan(user.plan || 'Free')
+    }
+  }, [user])
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target
@@ -33,6 +51,16 @@ export default function Settings() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsSaving(false)
+  }
+
+  const handleUpgrade = async () => {
+    setIsUpgrading(true)
+    setUpgradeMessage('')
+    // Simulate payment delay before upgrading via API
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    const result = await upgradeToPro()
+    setIsUpgrading(false)
+    if (result.success) setUpgradeMessage(result.message)
   }
 
   return (
@@ -107,6 +135,46 @@ export default function Settings() {
                 </Button>
               </div>
           </Card>
+
+        {/* Subscription / Upgrade Pro */}
+      <Card className="mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+              <CreditCard size={20} className="text-white" />
+            </div>
+            <CardTitle>Subscription & Billing</CardTitle>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border rounded-lg bg-tertiary/20">
+              <div>
+                <div className="font-semibold text-foreground mb-1">Current Plan: {plan}</div>
+                <p className="text-sm text-muted">
+                  {plan === 'Free' 
+                    ? 'Unlock advanced ATS insights and premium matching algorithms.' 
+                    : 'You are currently on the Pro plan. Enjoy your premium features!'}
+                </p>
+              </div>
+              {plan === 'Free' && (
+                <Button
+                  variant="primary"
+                  onClick={handleUpgrade}
+                  disabled={isUpgrading}
+                  className="mt-4 sm:mt-0 whitespace-nowrap bg-accent hover:bg-accent/90 border-accent text-white"
+                >
+                  {isUpgrading ? 'Processing...' : 'Upgrade Now'}
+                </Button>
+              )}
+            </div>
+            
+            {upgradeMessage && (
+              <div className="flex items-start gap-3 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-200">
+                <CheckCircle2 size={18} className="mt-0.5 flex-shrink-0" />
+                <span>{upgradeMessage}</span>
+              </div>
+            )}
+          </div>
+      </Card>
 
             {/* Notification Preferences */}
           <Card className="mb-8">

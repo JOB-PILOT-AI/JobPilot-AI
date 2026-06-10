@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename)
 import authRoutes from './routes/auth.js'
 import resumeRoutes from './routes/resume.js'
 import jobRoutes from './routes/jobs.js'
+import practiceRoutes from './routes/practice.js'
 import { seedJobs } from './utils/seeder.js'
 
 const app = express()
@@ -48,6 +49,7 @@ mongoose
 app.use('/auth', authRoutes)
 app.use('/resume', resumeRoutes)
 app.use('/jobs', jobRoutes)
+app.use('/practice', practiceRoutes)
 
 // Health check
 app.get('/health', (req, res) => {

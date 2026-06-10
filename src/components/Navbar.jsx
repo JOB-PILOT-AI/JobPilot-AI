@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import Button from './ui/Button'
-import { Menu, X } from 'lucide-react'
+import { Bell, Menu, Search, Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Navbar() {
@@ -15,48 +15,43 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-secondary border-b border-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 border-b border-border/70 bg-[#080808]/90 backdrop-blur-xl">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">JP</span>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-white shadow-lg shadow-primary/20">
+              <Sparkles size={18} />
             </div>
-            <span className="text-foreground font-bold hidden sm:inline">JobPilot.AI</span>
+            <div className="hidden sm:block leading-tight">
+              <span className="block text-lg font-bold text-foreground">JobPilot.AI</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] text-muted">Career Intelligence</span>
+            </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-7">
             {user ? (
               <>
-                <Link to="/dashboard" className="text-muted hover:text-foreground transition">
-                  Dashboard
-                </Link>
-                <Link to="/resume-builder" className="text-muted hover:text-foreground transition">
-                  Resume Builder
-                </Link>
-                <Link to="/jobs" className="text-muted hover:text-foreground transition">
-                  Job Matches
-                </Link>
-                <Link to="/settings" className="text-muted hover:text-foreground transition">
-                  Settings
-                </Link>
-                <div className="flex items-center gap-4 pl-8 border-l border-border">
-                  <span className="text-sm text-muted">{user.name}</span>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
-                    Logout
-                  </Button>
+                <div className="rounded-md border border-border bg-tertiary/70 px-4 py-2 text-sm font-semibold text-accent">
+                  Live Intelligence Active
+                </div>
+                <button className="text-muted transition hover:text-foreground" aria-label="Search">
+                  <Search size={20} />
+                </button>
+                <button className="text-muted transition hover:text-foreground" aria-label="Notifications">
+                  <Bell size={20} />
+                </button>
+                <div className="flex items-center gap-3 border-l border-border pl-6">
+                  <div className="text-right leading-tight">
+                    <div className="text-sm font-semibold text-foreground">{user.name}</div>
+                    <div className="text-xs text-muted">Director Level</div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>Logout</Button>
                 </div>
               </>
             ) : (
               <>
-                <a href="#features" className="text-muted hover:text-foreground transition">
-                  Features
-                </a>
-                <a href="#pricing" className="text-muted hover:text-foreground transition">
-                  Pricing
-                </a>
+                <a href="#features" className="text-sm text-muted hover:text-foreground transition">Features</a>
+                <a href="#pricing" className="text-sm text-muted hover:text-foreground transition">Pricing</a>
                 <Button variant="primary" size="sm" onClick={() => navigate('/login')}>
                   Sign In
                 </Button>

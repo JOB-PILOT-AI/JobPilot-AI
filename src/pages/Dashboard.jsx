@@ -17,6 +17,8 @@ import {
   Sparkles,
   Target,
   Upload,
+  Video,
+  BookOpen,
 } from 'lucide-react'
 
 const EMPTY_ANALYTICS = {
@@ -59,6 +61,7 @@ export default function Dashboard() {
   const [resume, setResume] = useState(null)
   const [atsAnalytics, setAtsAnalytics] = useState(null)
   const [jobMatches, setJobMatches] = useState([])
+  const [applications, setApplications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -75,18 +78,21 @@ export default function Dashboard() {
     setIsLoading(true)
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-      const [resumeRes, matchRes] = await Promise.all([
+      const [resumeRes, matchRes, appsRes] = await Promise.all([
         axios.get('/api/resume', { headers }),
         axios.get('/api/jobs/matches?limit=3', { headers }),
+        axios.get('/api/jobs/user/applications', { headers }),
       ])
 
       const latestResume = unwrapApiResponse(resumeRes.data, ['resumes'])?.[0] || null
       setResume(latestResume)
       setAtsAnalytics(latestResume?.atsAnalytics || buildLegacyAnalytics(latestResume))
       setJobMatches(unwrapApiResponse(matchRes.data, ['matches'])?.matches || [])
+      setApplications(unwrapApiResponse(appsRes.data, ['applications']) || [])
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
       setJobMatches([])
+      setApplications([])
       if (!resume) {
         setAtsAnalytics(null)
       }
@@ -186,14 +192,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-9">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Welcome back, {user?.name}</h1>
-          <p className="text-muted">Run ATS analysis, inspect resume health, and keep job matching synchronized.</p>
+          <h1 className="text-5xl font-bold tracking-tight text-foreground mb-4">Good Evening, {user?.name || 'Alex'}.</h1>
+          <p className="max-w-3xl text-xl leading-8 text-muted">
+            Your career intelligence is synced. Run ATS analysis, inspect resume health, and keep precision job matching active.
+          </p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button variant="outline" onClick={fetchDashboardData} disabled={isLoading}>
             <RefreshCcw size={16} className="mr-2" />
             Refresh
@@ -204,12 +212,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <Card className="border border-primary/30 bg-gradient-to-br from-secondary via-secondary to-tertiary/50">
+      <Card className="border border-primary/25 bg-[#170f10]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
-            <CardTitle className="text-2xl">Resume Analysis</CardTitle>
+            <CardTitle className="text-2xl text-primary-soft">ATS Optimization Intelligence</CardTitle>
             <CardContent className="max-w-2xl">
-              Upload a resume to generate ATS analysis, resume health, and job match preview.
+              Upload a resume to generate ATS analysis, resume health, and job match preview against live openings.
             </CardContent>
           </div>
 
@@ -235,7 +243,7 @@ export default function Dashboard() {
               </Button>
             )}
             <Button variant="outline" onClick={() => navigate('/resume-builder')}>
-              Edit Existing Resume
+              {resume ? 'Edit Existing Resume' : 'Create Resume'}
             </Button>
           </div>
         </div>
@@ -261,16 +269,16 @@ export default function Dashboard() {
       {resume ? (
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Card className="text-center">
+            <Card className="text-center bg-[#171212]">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Target size={22} />
               </div>
-              <div className="text-4xl font-bold text-foreground">{currentATS.score}</div>
+              <div className="text-5xl font-bold text-primary-soft">{currentATS.score}</div>
               <CardTitle className="mt-2 text-base">ATS Score</CardTitle>
               <CardContent>Deterministic score derived from ATS rules</CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-center bg-[#171212]">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15 text-accent">
                 <ShieldCheck size={22} />
               </div>
@@ -279,7 +287,7 @@ export default function Dashboard() {
               <CardContent>{currentATS.failedRules.length} gap areas identified</CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-center bg-[#171212]">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Sparkles size={22} />
               </div>
@@ -288,7 +296,7 @@ export default function Dashboard() {
               <CardContent>Normalized skills surfaced from the resume parser</CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-center bg-[#171212]">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-foreground">
                 <Briefcase size={22} />
               </div>
@@ -300,7 +308,7 @@ export default function Dashboard() {
 
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] items-start">
             <div className="space-y-8">
-              <Card>
+              <Card className="bg-[#170f10]">
                 <div className="flex items-center justify-between gap-4 mb-6">
                   <div>
                     <CardTitle>Resume Overview</CardTitle>
@@ -317,7 +325,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-xl border border-border bg-tertiary/60 p-4">
+                    <div className="rounded-md border border-border bg-[#1d1d1d] p-4">
                     <div className="mb-2 text-sm font-semibold text-foreground">Strengths</div>
                     <div className="flex flex-wrap gap-2">
                       {(currentATS.strengths.length > 0 ? currentATS.strengths : ['Profile and content analysis completed']).map((item) => (
@@ -328,7 +336,7 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-border bg-tertiary/60 p-4">
+                    <div className="rounded-md border border-border bg-[#1d1d1d] p-4">
                     <div className="mb-2 text-sm font-semibold text-foreground">Areas to improve</div>
                     <div className="flex flex-wrap gap-2">
                       {(currentATS.missingAreas.length > 0 ? currentATS.missingAreas : ['No gaps identified']).map((item) => (
@@ -342,7 +350,7 @@ export default function Dashboard() {
               </Card>
 
               <div className="grid gap-8 lg:grid-cols-2">
-                <Card>
+                <Card className="bg-[#181818]">
                   <div className="flex items-center gap-3 mb-5">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
                       <Sparkles size={18} />
@@ -366,7 +374,7 @@ export default function Dashboard() {
                   </div>
                 </Card>
 
-                <Card>
+                <Card className="bg-[#181818]">
                   <div className="flex items-center gap-3 mb-5">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/15 text-accent">
                       <Sparkles size={18} />
@@ -387,17 +395,43 @@ export default function Dashboard() {
                   </div>
                 </Card>
               </div>
+
+              {applications.length > 0 && (
+                <Card className="bg-[#170f10]">
+                  <CardTitle className="mb-5">Recent Applications</CardTitle>
+                  <div className="space-y-3">
+                    {applications.map((app) => (
+                      <div key={app._id} className="flex items-center justify-between rounded-xl border border-border bg-tertiary/40 p-4 transition-colors hover:bg-tertiary/60">
+                        <div>
+                          <div className="font-semibold text-foreground">{app.jobId?.title || 'Unknown Role'}</div>
+                          <div className="text-sm text-muted">{app.jobId?.company || 'Unknown Company'}</div>
+                        </div>
+                        <div className="text-right">
+                          {app.matchScore?.overall && (
+                            <span className="inline-block mb-1 rounded-md bg-primary/10 border border-primary/30 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                              {app.matchScore.overall}% Match
+                            </span>
+                          )}
+                          <div className="text-[11px] text-muted uppercase tracking-wide">
+                            Applied {new Date(app.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
 
             <div className="space-y-8">
-              <Card>
-                <div className="flex items-center justify-between mb-5">
+              <Card className="bg-[#170f10]">
+                  <div className="flex items-center justify-between mb-5">
                   <div>
                     <CardTitle className="text-xl">Top Match Preview</CardTitle>
                     <CardContent>Synced from the server-side job match engine</CardContent>
                   </div>
                   {bestMatch && (
-                    <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+                    <span className="rounded-md bg-primary/15 px-3 py-1 text-xs font-semibold text-primary-soft">
                       {bestMatch.matchScore?.matchPercentage ?? 0}%
                     </span>
                   )}
@@ -473,7 +507,7 @@ export default function Dashboard() {
                 )}
               </Card>
 
-              <Card>
+              <Card className="bg-[#181818]">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
                     <Upload size={18} />
@@ -496,12 +530,52 @@ export default function Dashboard() {
                   </div>
                 </div>
               </Card>
+
+              <Card className="bg-[#181818]">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                    <BookOpen size={18} />
+                  </div>
+                  <CardTitle className="text-xl">Placement Preparation</CardTitle>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-sm text-muted">Prepare for your upcoming interviews with our AI-powered tools.</p>
+                  <div className="grid gap-3">
+                    <Button variant="outline" className="w-full justify-start p-4 h-auto hover:border-primary/50 hover:bg-primary/5" onClick={() => navigate('/mock-interview')}>
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Video size={20} />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-semibold text-foreground">Mock Interview</div>
+                          <div className="text-xs text-muted font-normal mt-0.5">Practice with an AI interviewer</div>
+                        </div>
+                      </div>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start p-4 h-auto hover:border-accent/50 hover:bg-accent/5" onClick={() => navigate('/practice')}>
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                          <BookOpen size={20} />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-semibold text-foreground">Practice Tests</div>
+                          <div className="text-xs text-muted font-normal mt-0.5">Assess your technical aptitude</div>
+                        </div>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
             </div>
           </div>
         </>
       ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-secondary/60 px-6 py-12 text-center text-muted">
-          Upload a resume to view ATS score, recommendations, and match preview.
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary/60 px-6 py-12 text-center text-muted">
+          <p>Upload a resume to view ATS score, recommendations, and match preview.</p>
+          <p className="mt-4 text-sm">
+            Or <button onClick={() => navigate('/resume-builder')} className="font-semibold text-primary hover:underline">create your own resume</button> from scratch.
+          </p>
         </div>
       )}
     </div>

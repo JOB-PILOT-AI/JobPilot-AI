@@ -8,7 +8,7 @@ const Input = forwardRef(
           ref={ref}
           type={type}
           placeholder={placeholder}
-          className={`w-full bg-tertiary text-foreground border border-border rounded-lg px-4 py-2.5 text-sm transition-colors duration-200 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+          className={`w-full bg-[#141212] text-foreground border border-[#6b5555]/70 rounded-sm px-4 py-3 text-sm transition-colors duration-200 placeholder:text-muted/45 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/70 ${
             error ? 'border-red-500' : ''
           } ${className}`}
           {...props}

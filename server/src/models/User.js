@@ -37,6 +37,13 @@ const userSchema = new mongoose.Schema(
       emailNotifications: { type: Boolean, default: true },
       jobAlerts: { type: Boolean, default: true },
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    plan: {
+      type: String,
+      enum: ['Free', 'Pro'],
+      default: 'Free',
+    },
   },
   { timestamps: true }
 )

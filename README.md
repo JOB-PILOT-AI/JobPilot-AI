@@ -75,6 +75,11 @@ MONGODB_URI=mongodb://localhost:27017/jobpilot
 JWT_SECRET=your-secret-key-change-in-production
 NODE_ENV=development
 PORT=3001
+GITHUB_CLIENT_ID=Ov23liyOm6IN25tXfJoC
+GITHUB_CLIENT_SECRET=d79c8218f1913fe128d5af66e12e9d5aafe9ee13
+GOOGLE_CLIENT_ID=228813641025-ouq3lac99qqcbuod8kplb17ifcbt5khe.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+RESEND_API_KEY=re_7iSwQao6_4kVkohAs5Q8zM8sGLtztPhTs
 ```
 
 3. **Start MongoDB:**

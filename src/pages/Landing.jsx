@@ -2,207 +2,174 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Button from '../components/ui/Button'
 import { Card, CardContent, CardTitle } from '../components/ui/Card'
-import { ArrowRight, Zap, Brain, Gauge } from 'lucide-react'
+import { ArrowRight, BarChart3, Brain, Code2, Gauge, Globe2, Sparkles, Zap, FileText, Video, BookOpen } from 'lucide-react'
 
 export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-hidden bg-background text-foreground">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-5xl sm:text-6xl font-bold text-balance">
-              Precision tools for{' '}
-              <span className="text-primary">career growth</span>
+      <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-24 pt-20 lg:grid-cols-[1fr_0.9fr] lg:px-8">
+        <div className="space-y-8">
+          <div className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-soft">
+            Now in beta
+          </div>
+          <div className="space-y-5">
+            <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-balance sm:text-6xl">
+              Precision tools for <span className="text-primary-soft">career growth</span>
             </h1>
-            <p className="text-xl text-muted max-w-2xl mx-auto">
-              Intelligent job matching and engineering-focused workflows designed for the
-              modern professional.
+            <p className="max-w-xl text-base leading-7 text-muted">
+              A clinical approach to the job search. Leveraging career intelligence to match your engineering DNA with elite opportunities.
             </p>
           </div>
-
-          <div className="flex gap-4 justify-center">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => navigate('/login')}
-              className="flex items-center gap-2"
-            >
-              Get Started Free <ArrowRight size={20} />
+          <div className="flex flex-wrap gap-4">
+            <Button variant="primary" size="lg" onClick={() => navigate('/login')}>
+              Get Started Free <ArrowRight size={18} className="ml-2" />
             </Button>
-            <Button variant="outline" size="lg">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               View Demo
             </Button>
           </div>
+        </div>
 
-          {/* Hero Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-border">
-            <div>
-              <div className="text-2xl font-bold text-primary">94%</div>
-              <div className="text-sm text-muted">Match Accuracy</div>
+        <div className="rounded-lg border border-border bg-[#171212]/90 p-5 shadow-[0_30px_100px_rgba(182,77,80,0.12)]">
+          <div className="flex items-center justify-between border-b border-border pb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white">
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <div className="text-sm font-semibold">AI Matching Engine</div>
+                <div className="text-[11px] text-muted">Real-time Job DNA Analysis</div>
+              </div>
             </div>
+            <div className="text-2xl font-bold text-primary-soft">98% Match</div>
+          </div>
+          <div className="mt-6 space-y-5">
             <div>
-              <div className="text-2xl font-bold text-primary">25K+</div>
-              <div className="text-sm text-muted">Engineers</div>
+              <div className="mb-2 flex justify-between text-xs">
+                <span>Lead Systems Engineer</span>
+                <span className="text-primary-soft">Perfect Fit</span>
+              </div>
+              <div className="h-3 rounded-sm bg-tertiary">
+                <div className="h-full w-[92%] rounded-sm bg-primary-soft" />
+              </div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-primary">98%</div>
-              <div className="text-sm text-muted">ATS Optimized</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-md bg-[#151515] p-4">
+                <div className="text-[11px] uppercase text-muted">ATS compatibility</div>
+                <div className="mt-1 font-semibold">High (94)</div>
+              </div>
+              <div className="rounded-md bg-[#151515] p-4">
+                <div className="text-[11px] uppercase text-muted">Skill gaps</div>
+                <div className="mt-1 font-semibold">0 Missing</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* AI Match Engine Card */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card className="border-2 border-primary bg-gradient-to-br from-secondary to-tertiary">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
-                  <Brain size={20} className="text-white" />
+      <section id="features" className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+        <h2 className="mb-8 text-2xl font-semibold tracking-tight">Intelligence built for excellence</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            [Zap, 'Intelligent Matching', "Our neural network parses high-dimensional skill data to find roles that don't just match your title, but your actual engineering capacity.", '/jobs'],
+            [Gauge, 'ATS Optimization', 'Reverse-engineer recruitment systems with a surgical view into how ATS algorithms rank your profile against competitors.', '/dashboard'],
+            [FileText, 'Resume Builder', 'Create an ATS-friendly resume from scratch or import your existing one. Live preview and real-time scoring included.', '/resume-builder'],
+            [Video, 'Mock Interviews', 'Practice your technical and behavioral skills with an AI-powered mock interview simulator.', '/mock-interview'],
+            [BookOpen, 'Aptitude Practice', 'Brush up on your technical and non-technical aptitude with a library of practice questions.', '/practice'],
+            [Code2, 'Engineering Workflows', 'Export resumes as clean JSON, track applications with Git-like versioning, and automate the mundane.', ''],
+          ].map(([Icon, title, copy, link]) => (
+            <Card key={title} className={`overflow-hidden bg-[#211d1d]/90 ${link ? 'transition-colors hover:border-primary/50' : ''}`}>
+              <div className={`h-full w-full ${link ? 'cursor-pointer' : ''}`} onClick={() => link && navigate(link)}>
+                <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-sm border border-border bg-tertiary text-primary-soft">
+                  <Icon size={18} />
                 </div>
-                <span className="font-semibold text-primary">AI Matching Engine</span>
+                <CardTitle className="text-xl">{title}</CardTitle>
+                <CardContent className="mt-3">{copy}</CardContent>
               </div>
-              <h3 className="text-2xl font-bold mb-4">
-                Find your perfect job match
-              </h3>
-              <p className="text-muted mb-6">
-                Our intelligent engine analyzes your skills, experience, and preferences
-                to surface opportunities that align with your career goals.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                  <span className="text-sm">Skill-based matching algorithm</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                  <span className="text-sm">Real-time job alerts</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                  <span className="text-sm">Personalized recommendations</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 bg-tertiary rounded-lg p-8 text-center">
-              <div className="text-6xl font-bold text-primary mb-2">94%</div>
-              <div className="text-sm text-muted mb-4">Match Strength</div>
-              <Button variant="primary" className="w-full">
-                View Matching Jobs
-              </Button>
-            </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-8 px-6 py-24 lg:grid-cols-[1fr_0.9fr] lg:px-8">
+        <Card className="min-h-80 bg-[#181818]">
+          <CardTitle>Detailed Insights</CardTitle>
+          <CardContent className="mt-2">Visualize your market value with real-time industry data and salary benchmarks.</CardContent>
+          <div className="mt-10 flex h-32 items-end gap-4 border-t border-border pt-8">
+            {[38, 55, 70, 100, 60, 48].map((height, index) => (
+              <div
+                key={height}
+                className={`w-full rounded-sm ${index === 3 ? 'bg-primary-soft' : 'bg-[#5b4444]'}`}
+                style={{ height: `${height}%` }}
+              />
+            ))}
+          </div>
+          <div className="mt-4 flex justify-between text-xs text-muted">
+            <span>Market percentile <strong className="block text-foreground">Top 2%</strong></span>
+            <span className="text-right">Growth vector <strong className="block text-accent">+14.2%</strong></span>
           </div>
         </Card>
-      </section>
 
-      {/* Features Section */}
-      <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-4xl font-bold text-center mb-12">
-          Intelligence built for excellence
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <Zap size={24} className="text-white" />
-              </div>
-              <CardTitle className="text-lg">Intelligent Matching</CardTitle>
-            </div>
-            <CardContent>
-              Our neural network analyzes high-dimensional skill data to find roles that
-              don&apos;t just match your title, but your actual engineering capacity.
+        <div className="space-y-8">
+          <Card className="border-primary/25 bg-primary/10">
+            <CardTitle className="text-xl">Resume Scorecard</CardTitle>
+            <CardContent className="mt-3 flex items-center gap-3">
+              <Brain size={18} className="text-primary-soft" /> Optimized for 14 major ATS platforms.
             </CardContent>
           </Card>
-
-          <Card>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <Gauge size={24} className="text-white" />
+          <Card className="bg-[#181818]">
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <CardTitle className="text-xl">Global Reach</CardTitle>
+                <CardContent className="mt-3">Connecting elite talent with Fortune 500 tech teams across 4 continents.</CardContent>
+                <button className="mt-5 text-sm font-semibold text-primary-soft">Explore Network <ArrowRight size={14} className="inline" /></button>
               </div>
-              <CardTitle className="text-lg">ATS Optimization</CardTitle>
+              <Globe2 className="mt-2 text-border" size={86} />
             </div>
-            <CardContent>
-              We provide a surgical view into how specific ATS algorithms rank your profile
-              against competitors.
-            </CardContent>
-          </Card>
-
-          <Card>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <Brain size={24} className="text-white" />
-              </div>
-              <CardTitle className="text-lg">Engineering Workflows</CardTitle>
-            </div>
-            <CardContent>
-              Built by engineers, for engineers. Export required support, compare roles with
-              Git-like versioning, and automate mundane research.
-            </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 text-center space-y-6">
-          <h3 className="text-3xl font-bold">Ready to navigate your next pivot?</h3>
-          <p className="text-muted">
-            Join 25,000+ engineers using JobPilot.AI to manage their professional evolution
-            with clinical precision.
+      <section className="mx-auto max-w-7xl px-6 pb-24 lg:px-8">
+        <div className="rounded-2xl border border-border bg-[#33302e] px-8 py-20 text-center">
+          <h3 className="mx-auto max-w-2xl text-4xl font-bold tracking-tight">
+            Ready to navigate your <span className="text-primary-soft">next pivot?</span>
+          </h3>
+          <p className="mx-auto mt-6 max-w-xl text-sm leading-6 text-muted">
+            Join 25,000+ engineers using JobPilot.AI to manage their professional evolution with clinical precision.
           </p>
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => navigate('/login')}
-          >
+          <Button variant="primary" size="lg" className="mt-8" onClick={() => navigate('/login')}>
             Create Free Profile
           </Button>
-        </Card>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="font-bold mb-4">JobPilot.AI</div>
-              <div className="text-sm text-muted">Career Intelligence Platform</div>
-            </div>
-            <div>
-              <div className="font-semibold mb-4">Platform</div>
-              <ul className="text-sm text-muted space-y-2">
-                <li><a href="#" className="hover:text-foreground transition">ATS Scan</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Job Matches</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Resume Builder</a></li>
-              </ul>
-            </div>
-            <div>
-              <div className="font-semibold mb-4">Resources</div>
-              <ul className="text-sm text-muted space-y-2">
-                <li><a href="#" className="hover:text-foreground transition">Blog</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Documentation</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Templates</a></li>
-              </ul>
-            </div>
-            <div>
-              <div className="font-semibold mb-4">Legal</div>
-              <ul className="text-sm text-muted space-y-2">
-                <li><a href="#" className="hover:text-foreground transition">Privacy</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Terms</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Security</a></li>
-              </ul>
-            </div>
+      <footer className="border-t border-border bg-[#090909]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4 lg:px-8">
+          <div>
+            <div className="text-xl font-bold">JobPilot.AI</div>
+            <p className="mt-3 text-sm text-muted">Career Intelligence for the modern engineer.</p>
           </div>
-          <div className="border-t border-border pt-8 text-center text-sm text-muted">
-            © 2024 JobPilot.AI. All rights reserved.
-          </div>
+          {[
+            ['Platform', 'Features', 'ATS Scan', 'Pricing'],
+            ['Resources', 'Career Blog', 'Documentation', 'Templates'],
+            ['Legal', 'Privacy', 'Terms', 'Security'],
+          ].map(([title, ...links]) => (
+            <div key={title}>
+              <div className="mb-4 text-xs font-bold uppercase tracking-[0.18em]">{title}</div>
+              <div className="space-y-3 text-sm text-muted">
+                {links.map((link) => <a key={link} href="#" className="block hover:text-foreground">{link}</a>)}
+              </div>
+            </div>
+          ))}
         </div>
       </footer>
     </div>

@@ -118,11 +118,15 @@ export default function Jobs() {
   }, 0)
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8 py-4">
+    <div className="max-w-7xl mx-auto space-y-8 py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-3">Job Matches</h1>
-          <p className="max-w-2xl text-sm leading-6 text-muted">
+          <div className="mb-4 flex flex-wrap gap-3">
+            <span className="rounded-full border border-accent/40 px-4 py-1 text-sm font-semibold text-accent">Engineering</span>
+            <span className="rounded-full bg-tertiary px-4 py-1 text-sm font-semibold text-muted">Remote / Hybrid</span>
+          </div>
+          <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-foreground mb-3">Precision Job Matches</h1>
+          <p className="max-w-2xl text-base leading-7 text-muted">
             Search by title, company, skills, or keywords, then refine by location, remote type, salary, and fit threshold.
           </p>
         </div>
@@ -133,7 +137,7 @@ export default function Jobs() {
         </Button>
       </div>
 
-      <Card>
+      <Card className="bg-[#181818]">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
             <SlidersHorizontal size={18} />
@@ -180,7 +184,7 @@ export default function Jobs() {
           <div
             className={`overflow-hidden transition-all duration-300 ease-out ${isFiltersOpen ? 'mt-4 max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}
           >
-            <div className="rounded-2xl border border-border bg-secondary p-4 sm:p-5">
+            <div className="rounded-lg border border-border bg-secondary p-4 sm:p-5">
               <div className="grid gap-4 lg:grid-cols-4">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">Location</label>
@@ -315,7 +319,7 @@ export default function Jobs() {
             return (
               <Card
                 key={job._id}
-                className="group cursor-pointer border border-border bg-secondary transition duration-200 hover:-translate-y-1 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/10"
+                className="group cursor-pointer border border-border bg-[#170f10] transition duration-200 hover:-translate-y-1 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/10"
                 onClick={() => navigate(`/job-match/${job._id}`)}
               >
                 <div className="flex items-start justify-between gap-4 mb-5">
@@ -332,9 +336,9 @@ export default function Jobs() {
                   </div>
 
                   {matchScore > 0 && (
-                    <div className="flex h-14 min-w-14 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 px-3 text-center">
+                    <div className="flex h-14 min-w-14 items-center justify-center rounded-md border border-primary/30 bg-primary/10 px-3 text-center">
                       <div>
-                        <div className="text-lg font-bold text-primary">{matchScore}%</div>
+                        <div className="text-lg font-bold text-primary-soft">{matchScore}%</div>
                         <div className="text-[10px] uppercase tracking-wide text-muted">Match</div>
                       </div>
                     </div>

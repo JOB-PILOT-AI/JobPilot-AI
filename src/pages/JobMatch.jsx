@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
-import { CheckCircle, AlertCircle, Building, MapPin, DollarSign, RefreshCcw, ArrowLeft } from 'lucide-react'
+import { CheckCircle, AlertCircle, Building, MapPin, DollarSign, RefreshCcw, ArrowLeft, X, Bookmark } from 'lucide-react'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
@@ -24,10 +24,37 @@ export default function JobMatch() {
   const [job, setJob] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
+  const [applyStatus, setApplyStatus] = useState('idle') // 'idle', 'submitting', 'success', 'error'
+  const [coverLetter, setCoverLetter] = useState('')
+  const [isSaved, setIsSaved] = useState(false)
+  const [hasResume, setHasResume] = useState(null)
+  const [userResumeId, setUserResumeId] = useState(null)
+  const [applyError, setApplyError] = useState('')
 
   useEffect(() => {
     loadJobMatch()
+    if (token) {
+      checkUserResume()
+    }
   }, [jobId, token])
+
+  const checkUserResume = async () => {
+    try {
+      const response = await axios.get('/api/resume', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const resumes = unwrapApiResponse(response.data, ['resumes']) || response.data
+      if (resumes && resumes.length > 0) {
+        setHasResume(true)
+        setUserResumeId(resumes[0]._id || resumes[0].id)
+      } else {
+        setHasResume(false)
+      }
+    } catch {
+      setHasResume(false)
+    }
+  }
 
   const loadJobMatch = async () => {
     setIsLoading(true)
@@ -51,25 +78,68 @@ export default function JobMatch() {
   const matchData = job?.matchData || null
 
   const handleApply = () => {
+    setApplyError('')
     if (!user) {
       navigate('/login', { state: { from: `/job-match/${jobId}` } })
+    } else if (hasResume === null) {
+      setApplyError('Checking your profile status. Please click again in a moment.')
+    } else if (hasResume === false) {
+      setApplyError('You must have a resume to apply. Please create one in the Resume Builder.')
+    } else if (jobRecord?.applyUrl) {
+      // If the job has an external link (like a Google Form), open it directly
+      window.open(jobRecord.applyUrl, '_blank')
     } else {
-      console.log('Applying for job:', jobId)
+      // Otherwise, open our internal application form
+      setIsApplyModalOpen(true)
+    }
+  }
+
+  const submitApplication = async (e) => {
+    e.preventDefault()
+    setApplyStatus('submitting')
+    setApplyError('')
+    try {
+      await axios.post(`/api/jobs/${jobId}/apply`, { coverLetter, resumeId: userResumeId }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+      setApplyStatus('success')
+    } catch (err) {
+      setApplyStatus('error')
+      setApplyError(err.response?.data?.message || 'Failed to submit application. Please try again.')
     }
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       <div className="flex items-center justify-between gap-4">
         <Button variant="outline" onClick={() => navigate('/jobs')}>
           <ArrowLeft size={16} className="mr-2" />
           Back to jobs
         </Button>
 
-        <Button variant="primary" onClick={handleApply}>
-          Apply Now
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsSaved(!isSaved)}
+            className={isSaved ? 'text-primary border-primary/50 bg-primary/5' : ''}
+          >
+            <Bookmark size={16} className={`mr-2 ${isSaved ? 'fill-primary text-primary' : ''}`} />
+            {isSaved ? 'Saved' : 'Save Job'}
+          </Button>
+          <Button variant="primary" onClick={handleApply}>
+            Apply Now
+          </Button>
+        </div>
       </div>
+
+      {applyError && (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-sm text-red-300">
+          {applyError}{' '}
+          <Link to="/resume-builder" className="font-semibold underline hover:text-red-200">
+            Go to Resume Builder
+          </Link>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
@@ -92,7 +162,7 @@ export default function JobMatch() {
       ) : jobRecord ? (
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)] items-start">
           <div className="space-y-8">
-            <Card>
+            <Card className="bg-transparent border-0 p-0 shadow-none">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-2">
@@ -103,7 +173,7 @@ export default function JobMatch() {
                   </div>
 
                   <div>
-                    <h1 className="text-4xl font-bold text-foreground mb-3">{jobRecord.title}</h1>
+                    <h1 className="max-w-3xl text-6xl font-bold tracking-tight text-foreground mb-5">{jobRecord.title}</h1>
                     <div className="flex flex-wrap gap-6 text-muted">
                       <div className="flex items-center gap-2">
                         <Building size={18} />
@@ -121,8 +191,8 @@ export default function JobMatch() {
                   </div>
                 </div>
 
-                <div className="min-w-44 rounded-2xl border border-primary/30 bg-primary/10 p-5 text-center">
-                  <div className="text-4xl font-bold text-primary">{matchData?.matchPercentage ?? 0}%</div>
+                <div className="min-w-44 rounded-lg border border-primary/30 bg-primary/10 p-5 text-center">
+                  <div className="text-5xl font-bold text-primary-soft">{matchData?.matchPercentage ?? 0}%</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.2em] text-muted">Match</div>
                   <div className="mt-3 text-sm text-muted">Confidence {matchData?.confidence ?? 0}%</div>
                 </div>
@@ -182,7 +252,7 @@ export default function JobMatch() {
             </Card>
 
             <div className="grid gap-8 md:grid-cols-2">
-              <Card>
+              <Card className="bg-[#181818]">
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle size={20} className="text-accent" />
                   <CardTitle className="text-lg">Matched skills</CardTitle>
@@ -205,7 +275,7 @@ export default function JobMatch() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-[#181818]">
                 <div className="flex items-center gap-2 mb-4">
                   <AlertCircle size={20} className="text-yellow-400" />
                   <CardTitle className="text-lg">Missing skills</CardTitle>
@@ -257,7 +327,7 @@ export default function JobMatch() {
               </Card>
             </div>
 
-            <Card>
+            <Card className="border-primary/25 bg-[#252020]">
               <CardTitle className="mb-4">Role overview</CardTitle>
               <CardContent className="space-y-4">
                 <p className="text-sm leading-6 text-muted">{jobRecord.description}</p>
@@ -310,6 +380,87 @@ export default function JobMatch() {
           </div>
         </div>
       ) : null}
+
+      {/* Application Modal */}
+      {isApplyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <Card className="w-full max-w-lg bg-[#181818]">
+            <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
+              <CardTitle className="text-xl">Apply for {jobRecord?.title}</CardTitle>
+              <button
+                onClick={() => setIsApplyModalOpen(false)}
+                className="text-muted hover:text-foreground transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {applyStatus === 'success' ? (
+              <div className="py-8 text-center space-y-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 text-green-400">
+                  <CheckCircle size={32} />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground">Application Submitted!</h3>
+                <p className="text-muted">Your profile and resume have been securely sent to {jobRecord?.company}.</p>
+                <Button variant="outline" onClick={() => setIsApplyModalOpen(false)} className="mt-4">
+                  Close Window
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={submitApplication} className="space-y-5">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground">Full Name</label>
+                      <input type="text" value={user?.name || ''} disabled className="w-full rounded-lg border border-border bg-tertiary/50 px-3 py-2 text-sm text-muted opacity-70" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground">Email</label>
+                      <input type="email" value={user?.email || ''} disabled className="w-full rounded-lg border border-border bg-tertiary/50 px-3 py-2 text-sm text-muted opacity-70" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-foreground">Resume</label>
+                    <div className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-soft">
+                      ✓ Your JobPilot profile and latest ATS resume will be automatically attached.
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-foreground">Cover Letter / Note (Optional)</label>
+                    <textarea
+                      rows={4}
+                      value={coverLetter}
+                      onChange={(e) => setCoverLetter(e.target.value)}
+                      placeholder="Why are you a great fit for this role?"
+                      className="w-full rounded-lg border border-border bg-tertiary px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {applyStatus === 'error' && (
+                  <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+                    {applyError}
+                    {applyError.toLowerCase().includes('resume') && (
+                      <div className="mt-2">
+                        <Link to="/resume-builder" className="font-semibold underline hover:text-red-300">
+                          Go to Resume Builder
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-3 border-t border-border pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsApplyModalOpen(false)}>Cancel</Button>
+                  <Button type="submit" variant="primary" disabled={applyStatus === 'submitting'}>
+                    {applyStatus === 'submitting' ? 'Submitting...' : 'Submit Application'}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

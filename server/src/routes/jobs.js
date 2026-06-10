@@ -147,9 +147,12 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
       return res.status(404).json(buildErrorResponse('Job not found'))
     }
 
-    const resume = await Resume.findById(resumeId)
+    const resume = resumeId 
+      ? await Resume.findById(resumeId) 
+      : await Resume.findOne({ userId: req.user.userId }).sort({ updatedAt: -1 })
+
     if (!resume || resume.userId.toString() !== req.user.userId) {
-      return res.status(404).json(buildErrorResponse('Resume not found'))
+      return res.status(404).json(buildErrorResponse('Resume not found. Please upload or create a resume first.'))
     }
 
     const existingApplication = await Application.findOne({
@@ -167,7 +170,7 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
     const application = new Application({
       userId: req.user.userId,
       jobId: req.params.id,
-      resumeId,
+      resumeId: resume._id,
       matchScore: {
         overall: matchData.matchPercentage,
         skillMatch: matchData.requiredSkillMatch,

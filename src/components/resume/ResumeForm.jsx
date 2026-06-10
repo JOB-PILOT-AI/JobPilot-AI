@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Plus, X, Upload, Save } from 'lucide-react'
+import { Plus, X, Upload, Save, Sparkles } from 'lucide-react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import { Textarea } from '../ui/textarea'
@@ -13,6 +13,8 @@ const ResumeForm = ({
   uploadError,
   uploadSuccess,
   onUploadFile,
+  isGenerating,
+  onGenerateSummary,
   onSave,
   onPersonalInfoChange,
   onSkillAdd,
@@ -157,12 +159,28 @@ const ResumeForm = ({
           />
         </div>
 
-        <Textarea
-          placeholder="Professional summary"
-          className="min-h-28"
-          value={resumeData.personalInfo.summary}
-          onChange={(event) => onPersonalInfoChange('summary', event.target.value)}
-        />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-foreground">Professional Summary</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onGenerateSummary}
+              disabled={isGenerating}
+              className="h-7 px-2.5 text-xs text-primary-soft border-primary/30 hover:bg-primary/10"
+            >
+              <Sparkles size={12} className="mr-1.5" />
+              {isGenerating ? 'Generating...' : 'AI Generate'}
+            </Button>
+          </div>
+          <Textarea
+            placeholder="Write a brief professional summary"
+            className="min-h-28"
+            value={resumeData.personalInfo.summary}
+            onChange={(event) => onPersonalInfoChange('summary', event.target.value)}
+          />
+        </div>
       </Card>
 
       <Card className="space-y-5">

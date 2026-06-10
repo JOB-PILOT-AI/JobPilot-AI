@@ -93,6 +93,81 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  githubLogin: async (code) => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await axios.post(`${API_URL}/auth/github`, { code })
+      const { user, token } = res.data
+      set({ user, token, isLoading: false, isHydrated: true })
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      setAuthHeader(token)
+      return { success: true }
+    } catch (err) {
+      const message = err.response?.data?.message || 'GitHub login failed'
+      set({ error: message, isLoading: false })
+      return { success: false, error: message }
+    }
+  },
+
+  googleLogin: async (code, redirectUri) => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await axios.post(`${API_URL}/auth/google`, { code, redirectUri })
+      const { user, token } = res.data
+      set({ user, token, isLoading: false, isHydrated: true })
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      setAuthHeader(token)
+      return { success: true }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Google login failed'
+      set({ error: message, isLoading: false })
+      return { success: false, error: message }
+    }
+  },
+
+  forgotPassword: async (email) => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await axios.post(`${API_URL}/auth/forgot-password`, { email })
+      set({ isLoading: false })
+      return { success: true, message: res.data.message }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to send reset link'
+      set({ error: message, isLoading: false })
+      return { success: false, error: message }
+    }
+  },
+
+  resetPassword: async (token, newPassword) => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await axios.post(`${API_URL}/auth/reset-password`, { token, newPassword })
+      set({ isLoading: false })
+      return { success: true, message: res.data.message }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to reset password'
+      set({ error: message, isLoading: false })
+      return { success: false, error: message }
+    }
+  },
+
+  upgradeToPro: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await axios.post(`${API_URL}/auth/upgrade`)
+      const updatedUser = { ...useAuthStore.getState().user, plan: 'Pro' }
+      set({ user: updatedUser, isLoading: false })
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      return { success: true, message: res.data.message }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Upgrade failed'
+      set({ error: message, isLoading: false })
+      return { success: false, error: message }
+    }
+  },
+
   logout: () => {
     set({ user: null, token: null, isHydrated: true })
     localStorage.removeItem('token')
