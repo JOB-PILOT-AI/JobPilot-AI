@@ -4,6 +4,7 @@ import {
   BarChart3,
   FileText,
   Briefcase,
+  Radar,
   Settings,
   LogOut,
   ChevronLeft,
@@ -22,6 +23,7 @@ export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) 
     { label: 'Dashboard', icon: BarChart3, path: '/dashboard' },
     { label: 'Resume Builder', icon: FileText, path: '/resume-builder' },
     { label: 'Job Matches', icon: Briefcase, path: '/jobs' },
+    { label: 'Skill DNA', icon: Radar, path: '/skill-dna' },
     { label: 'Settings', icon: Settings, path: '/settings' },
   ]
 

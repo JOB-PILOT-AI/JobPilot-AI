@@ -39,6 +39,9 @@ export default function Navbar() {
                 <Link to="/jobs" className="text-muted hover:text-foreground transition">
                   Job Matches
                 </Link>
+                <Link to="/skill-dna" className="text-muted hover:text-foreground transition">
+                  Skill DNA
+                </Link>
                 <Link to="/settings" className="text-muted hover:text-foreground transition">
                   Settings
                 </Link>
@@ -98,6 +101,13 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   Job Matches
+                </Link>
+                <Link
+                  to="/skill-dna"
+                  className="block px-4 py-2 text-muted hover:text-foreground"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Skill DNA
                 </Link>
                 <Link
                   to="/settings"
