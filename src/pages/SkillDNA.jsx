@@ -20,8 +20,8 @@ import Button from '../components/ui/Button'
 import { useAuthStore } from '../store/authStore'
 import { getApiErrorMessage, unwrapApiResponse } from '../lib/apiResponse'
 
-const ELECTRIC_CYAN = '#37F2FF'
-const SOFT_BLUE = '#69A7FF'
+const ELECTRIC_CYAN = '#22D3EE'
+const TARGET_COLOR = '#FBBF24'
 
 const DIMENSION_LIBRARY = [
   {
@@ -62,7 +62,7 @@ const DIMENSION_LIBRARY = [
   },
   {
     key: 'leadership',
-    label: 'Leadership / Communication',
+    label: 'Leadership',
     skills: ['Leadership', 'Agile', 'Scrum', 'Jira', 'Confluence', 'Notion', 'Figma'],
     signals: ['lead', 'leader', 'leadership', 'manager', 'principal', 'staff', 'mentor', 'mentoring', 'coaching', 'stakeholder', 'communication', 'collaboration', 'planning', 'ownership'],
   },
@@ -248,7 +248,7 @@ const buildRadarOption = (dimensions, rows, candidateName, targetName) => {
     animationDuration: 900,
     animationDurationUpdate: 180,
     animationEasing: 'cubicOut',
-    color: [ELECTRIC_CYAN, SOFT_BLUE],
+    color: [ELECTRIC_CYAN, TARGET_COLOR],
     legend: {
       top: 8,
       itemWidth: 10,
@@ -315,6 +315,9 @@ const buildRadarOption = (dimensions, rows, candidateName, targetName) => {
     series: [
       {
         type: 'radar',
+        name: candidateName,
+        zlevel: 1,
+        z: 2,
         symbol: 'circle',
         symbolSize: 6,
         data: [
@@ -323,15 +326,16 @@ const buildRadarOption = (dimensions, rows, candidateName, targetName) => {
             name: candidateName,
             lineStyle: {
               color: ELECTRIC_CYAN,
-              width: 2.5,
-              shadowColor: 'rgba(55,242,255,0.45)',
-              shadowBlur: 16,
+              width: 3,
+              type: 'solid',
+              shadowColor: 'rgba(34,211,238,.35)',
+              shadowBlur: 14,
             },
             itemStyle: {
               color: ELECTRIC_CYAN,
             },
             areaStyle: {
-              color: 'rgba(55,242,255,0.28)',
+              color: 'rgba(34,211,238,.25)',
             },
             emphasis: {
               lineStyle: {
@@ -339,20 +343,31 @@ const buildRadarOption = (dimensions, rows, candidateName, targetName) => {
               },
             },
           },
+        ],
+      },
+      {
+        type: 'radar',
+        name: targetName,
+        zlevel: 0,
+        z: 1,
+        symbol: 'circle',
+        symbolSize: 6,
+        data: [
           {
             value: targetValues,
             name: targetName,
             lineStyle: {
-              color: SOFT_BLUE,
-              width: 2.5,
-              shadowColor: 'rgba(105,167,255,0.4)',
-              shadowBlur: 14,
+              color: TARGET_COLOR,
+              width: 2,
+              type: 'dashed',
+              shadowColor: 'rgba(251,191,36,.22)',
+              shadowBlur: 16,
             },
             itemStyle: {
-              color: SOFT_BLUE,
+              color: TARGET_COLOR,
             },
             areaStyle: {
-              color: 'rgba(105,167,255,0.2)',
+              color: 'rgba(251,191,36,.16)',
             },
             emphasis: {
               lineStyle: {
@@ -651,7 +666,7 @@ export default function SkillDNA() {
           <div>
             <CardTitle className="text-2xl">Career DNA Match Overlay</CardTitle>
             <CardContent className="max-w-2xl">
-              Candidate profile is shown in Electric Cyan. Selected target job is shown in Soft Blue.
+              Candidate profile is shown in Electric Cyan. Selected target job is shown in Amber Gold.
             </CardContent>
           </div>
 
