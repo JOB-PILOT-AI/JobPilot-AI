@@ -4,6 +4,7 @@ import {
   BarChart3,
   FileText,
   Briefcase,
+  Radar,
   Settings,
   LogOut,
   ChevronLeft,
@@ -37,6 +38,7 @@ export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) 
     { label: 'Applications', icon: ClipboardList, path: '/applications' },
     { label: 'Job Matches', icon: Briefcase, path: '/jobs' },
     { label: 'Interview Prep', icon: MessageSquare, path: '/interview-prep' },
+    { label: 'Skill DNA', icon: Radar, path: '/skill-dna' },
     { label: 'Settings', icon: Settings, path: '/settings' },
   ]
 

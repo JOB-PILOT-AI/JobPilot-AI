@@ -7,6 +7,7 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Jobs from './pages/Jobs'
 import JobMatch from './pages/JobMatch'
+import SkillDNA from './pages/SkillDNA'
 import Dashboard from './pages/Dashboard'
 import ResumeBuilder from './pages/ResumeBuilder'
 import Settings from './pages/Settings'
@@ -48,6 +49,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/jobs" element={<Jobs />} />
+            <Route path="/skill-dna" element={<SkillDNA />} />
             <Route path="/job-match/:jobId" element={<JobMatch />} />
             <Route path="/resume-builder" element={<ResumeBuilder />} />
             <Route path="/career-autopilot" element={<CareerAutopilot />} />

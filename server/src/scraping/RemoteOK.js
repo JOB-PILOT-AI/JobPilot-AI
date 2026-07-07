@@ -55,12 +55,17 @@ const TECH_TITLE_KEYWORDS = [
   'cybersecurity engineer',
   'machine learning engineer',
   'ai engineer',
+  'data scientist',
+  'data analyst',
+  'online data analyst',
   'data engineer',
   'data platform engineer',
   'analytics engineer',
   'mobile engineer',
   'android developer',
   'ios developer',
+  'quality assurance rater',
+  'quality analyst',
   'application engineer',
   'systems engineer',
   'staff engineer',
@@ -379,11 +384,11 @@ const analyzeRemoteOKJob = ({ title, company, tags = [], description = '', sourc
     }
   }
 
-  // strict non-technical rejection remains unchanged
-  if (isRejectedJob([title, company, ...tags].filter(Boolean).join(' ')) || isRejectedJob(description)) {
+  // explicit technical titles -> accept immediately
+  if (technicalTitleMatched.length > 0) {
     return {
-      accepted: false,
-      reason: 'non_technical_role',
+      accepted: true,
+      reason: null,
       technicalSignalCount,
       tagSignals,
       technicalTitleMatched,
@@ -392,11 +397,11 @@ const analyzeRemoteOKJob = ({ title, company, tags = [], description = '', sourc
     }
   }
 
-  // explicit technical titles -> accept immediately
-  if (technicalTitleMatched.length > 0) {
+  // strict non-technical rejection remains unchanged for non-explicit titles
+  if (isRejectedJob([title, company, ...tags].filter(Boolean).join(' ')) || isRejectedJob(description)) {
     return {
-      accepted: true,
-      reason: null,
+      accepted: false,
+      reason: 'non_technical_role',
       technicalSignalCount,
       tagSignals,
       technicalTitleMatched,

@@ -10,10 +10,30 @@ import { calculateATSScore } from '../services/atsScoring.js'
 import { buildErrorResponse, buildSuccessResponse } from '../utils/apiResponses.js'
 import { dedupeJobs } from '../services/jobs/detectDuplicate.js'
 import { ingestJob } from '../services/jobs/ingestJob.js'
+import { importRemotiveJobs } from '../services/jobs/importRemotiveJobs.js'
 import { importRemoteOKJobs } from '../services/jobs/importRemoteOKJobs.js'
 import { toCanonicalJob } from '../utils/jobTransforms.js'
 
 const router = express.Router()
+
+const getLatestResumeForUser = async (userId) => {
+  if (!userId) {
+    return null
+  }
+
+  return Resume.findOne({ userId }).sort({ updatedAt: -1 })
+}
+
+const buildSerializedJobs = (jobs, resume = null, atsAnalytics = null) => {
+  if (!resume) {
+    return jobs.map((job) => serializeJob(job))
+  }
+
+  return jobs.map((job) => {
+    const matchData = calculateJobMatch(resume, job, { atsAnalytics })
+    return serializeJob(job, matchData)
+  })
+}
 
 const serializeJob = (job, matchData = null) => {
   const canonicalJob = toCanonicalJob(job)
@@ -40,10 +60,12 @@ router.get('/', authenticateOptional, async (req, res) => {
         .limit(100)
     )
 
-    const filteredJobs = applyJobFilters(jobs, normalizeJobFilters(req.query))
-    const serializedJobs = filteredJobs.map((job) => serializeJob(job))
+    const resume = req.user ? await getLatestResumeForUser(req.user.userId) : null
+    const atsAnalytics = resume ? resume.atsAnalytics || calculateATSScore(resume.toObject()) : null
+    const matchedJobs = buildSerializedJobs(jobs, resume, atsAnalytics)
+    const filteredJobs = applyJobFilters(matchedJobs, normalizeJobFilters(req.query))
 
-    res.json(buildSuccessResponse(serializedJobs, { jobs: serializedJobs }))
+    res.json(buildSuccessResponse(filteredJobs, { jobs: filteredJobs }))
   } catch (err) {
     res.status(500).json(buildErrorResponse('Failed to fetch jobs', { error: err.message }))
   }
@@ -145,6 +167,21 @@ router.get('/import/remoteok', authenticateToken, async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 50))
     const result = await importRemoteOKJobs({ limit })
+
+    res.json(result)
+  } catch (err) {
+    res.status(200).json({
+      success: true,
+      imported: 0,
+      skipped: 0,
+    })
+  }
+})
+
+router.get('/import/remotive', authenticateToken, async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 50))
+    const result = await importRemotiveJobs({ limit })
 
     res.json(result)
   } catch (err) {
