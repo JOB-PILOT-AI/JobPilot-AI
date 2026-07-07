@@ -1,6 +1,6 @@
 # JobPilot.AI - Career Intelligence Platform
 
-A comprehensive MERN full-stack application for intelligent job matching, resume optimization, and career management.
+A comprehensive MERN full-stack application for intelligent job matching, resume optimization, and career management, powered by Google's Gemini models.
 
 ## Features
 
@@ -239,7 +239,7 @@ vercel deploy
 ## Development Notes
 
 - The application uses heuristic-based matching instead of complex AI to keep it lightweight and maintainable
-- Resume parsing is basic; production implementations would use ML-based extraction
+- Resume parsing is basic; production implementations would use more advanced ML-based extraction
 - All dummy data is seeded on server startup
 - File uploads are stored in `server/uploads/` directory
 

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Plus, X, Upload, Save } from 'lucide-react'
+import { Download, Plus, Sparkles, X, Upload, Save } from 'lucide-react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import { Textarea } from '../ui/textarea'
@@ -22,7 +22,10 @@ const ResumeForm = ({
   onSectionRemove,
   onSectionChange,
   onClearResume,
+  onGenerateSummary,
+  onDownloadPdf,
   canSave,
+  isGeneratingSummary,
 }) => {
   const fileInputRef = useRef(null)
   const [newSkill, setNewSkill] = useState('')
@@ -46,10 +49,10 @@ const ResumeForm = ({
   }
 
   const renderSectionHeader = (title, description, onAdd, buttonLabel = 'Add') => (
-    <div className="flex items-center justify-between gap-4 mb-4">
+    <div className="mb-4 flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#111417] p-4 md:flex-row md:items-center md:justify-between">
       <div>
         <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-        <p className="text-sm text-muted">{description}</p>
+        <p className="max-w-2xl text-sm text-muted">{description}</p>
       </div>
       <Button variant="outline" size="sm" onClick={onAdd} className="flex items-center gap-2">
         <Plus size={14} />
@@ -59,14 +62,14 @@ const ResumeForm = ({
   )
 
   return (
-    <div className="space-y-6">
-      <Card className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
+    <div className="space-y-8">
+      <Card className="space-y-4 border-white/5 bg-transparent p-0 shadow-none">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="mb-2">Upload Resume</CardTitle>
             <p className="text-sm text-muted">PDF or DOCX up to 10MB</p>
           </div>
-          <Button variant="primary" size="sm" onClick={triggerFilePicker} disabled={isUploading}>
+          <Button variant="primary" size="sm" onClick={triggerFilePicker} disabled={isUploading} className="w-full sm:w-auto">
             <Upload size={14} className="mr-2" />
             {isUploading ? 'Parsing...' : 'Upload'}
           </Button>
@@ -100,11 +103,11 @@ const ResumeForm = ({
         )}
       </Card>
 
-      <Card className="space-y-5">
-        <div className="flex items-center justify-between gap-4">
+      <Card className="space-y-5 border-white/5 bg-transparent p-0 shadow-none">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <CardTitle className="mb-2">Personal Information</CardTitle>
-            <p className="text-sm text-muted">Keep contact details and summary aligned with ATS systems.</p>
+            <CardTitle className="mb-1 text-2xl">Personal Information</CardTitle>
+            <p className="text-sm text-muted">Start with contact details and a concise summary.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -120,10 +123,14 @@ const ResumeForm = ({
               <Save size={14} className="mr-2" />
               {isSaving ? 'Saving...' : 'Save Draft'}
             </Button>
+            <Button variant="outline" size="sm" onClick={onDownloadPdf} disabled={isUploading}>
+              <Download size={14} className="mr-2" />
+              PDF
+            </Button>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
           <Input
             placeholder="Full Name"
             value={resumeData.personalInfo.fullName}
@@ -157,17 +164,31 @@ const ResumeForm = ({
           />
         </div>
 
-        <Textarea
-          placeholder="Professional summary"
-          className="min-h-28"
-          value={resumeData.personalInfo.summary}
-          onChange={(event) => onPersonalInfoChange('summary', event.target.value)}
-        />
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-sm font-semibold text-foreground">Professional summary</label>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onGenerateSummary}
+              disabled={isGeneratingSummary}
+            >
+              <Sparkles size={14} className="mr-2" />
+              {isGeneratingSummary ? 'Writing...' : 'Write with AI'}
+            </Button>
+          </div>
+          <Textarea
+            placeholder="Professional summary"
+            className="min-h-28"
+            value={resumeData.personalInfo.summary}
+            onChange={(event) => onPersonalInfoChange('summary', event.target.value)}
+          />
+        </div>
       </Card>
 
-      <Card className="space-y-5">
-        {renderSectionHeader('Skills', 'Normalize and rank skills for ATS consumption.', handleAddSkill)}
-        <div className="flex gap-3">
+      <Card className="space-y-5 border-white/5 bg-transparent p-0 shadow-none">
+        {renderSectionHeader('Core Skills', 'Normalize and rank skills for ATS consumption.', handleAddSkill)}
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Input
             placeholder="Add a skill"
             value={newSkill}
@@ -179,7 +200,7 @@ const ResumeForm = ({
               }
             }}
           />
-          <Button variant="primary" size="sm" onClick={handleAddSkill}>
+          <Button variant="primary" size="sm" onClick={handleAddSkill} className="sm:w-24">
             Add
           </Button>
         </div>
@@ -188,7 +209,7 @@ const ResumeForm = ({
             resumeData.skills.map((skill, index) => (
               <div
                 key={`${skill}-${index}`}
-                className="flex items-center gap-2 rounded-full border border-border bg-tertiary px-3 py-1.5"
+                className="flex items-center gap-2 rounded-full border border-white/10 bg-[#111417] px-3 py-1.5"
               >
                 <input
                   value={skill}
@@ -205,19 +226,19 @@ const ResumeForm = ({
               </div>
             ))
           ) : (
-            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted">
+            <div className="w-full rounded-lg border border-dashed border-white/15 px-4 py-6 text-sm text-muted">
               No skills added yet.
             </div>
           )}
         </div>
       </Card>
 
-      <Card className="space-y-5">
+      <Card className="space-y-5 border-white/5 bg-transparent p-0 shadow-none">
         {renderSectionHeader('Education', 'Add degrees, institutions, and graduation details.', () => onSectionAdd('education'))}
         <div className="space-y-4">
           {resumeData.education.length > 0 ? (
             resumeData.education.map((item, index) => (
-              <div key={`education-${index}`} className="rounded-xl border border-border bg-tertiary p-4 space-y-4">
+              <div key={`education-${index}`} className="space-y-4 rounded-2xl border border-white/10 bg-[#111417] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid flex-1 gap-4 md:grid-cols-2">
                     <Input
@@ -252,19 +273,19 @@ const ResumeForm = ({
               </div>
             ))
           ) : (
-            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted">
+            <div className="rounded-lg border border-dashed border-white/15 px-4 py-6 text-sm text-muted">
               No education entries added yet.
             </div>
           )}
         </div>
       </Card>
 
-      <Card className="space-y-5">
+      <Card className="space-y-5 border-white/5 bg-transparent p-0 shadow-none">
         {renderSectionHeader('Experience', 'Capture measurable work history and impact.', () => onSectionAdd('experience'))}
         <div className="space-y-4">
           {resumeData.experience.length > 0 ? (
             resumeData.experience.map((item, index) => (
-              <div key={`experience-${index}`} className="rounded-xl border border-border bg-tertiary p-4 space-y-4">
+              <div key={`experience-${index}`} className="space-y-4 rounded-2xl border border-white/10 bg-[#111417] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid flex-1 gap-4 md:grid-cols-2">
                     <Input
@@ -312,19 +333,19 @@ const ResumeForm = ({
               </div>
             ))
           ) : (
-            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted">
+            <div className="rounded-lg border border-dashed border-white/15 px-4 py-6 text-sm text-muted">
               No experience entries added yet.
             </div>
           )}
         </div>
       </Card>
 
-      <Card className="space-y-5">
+      <Card className="space-y-5 border-white/5 bg-transparent p-0 shadow-none">
         {renderSectionHeader('Projects', 'Highlight relevant product and engineering work.', () => onSectionAdd('projects'))}
         <div className="space-y-4">
           {resumeData.projects.length > 0 ? (
             resumeData.projects.map((item, index) => (
-              <div key={`project-${index}`} className="rounded-xl border border-border bg-tertiary p-4 space-y-4">
+              <div key={`project-${index}`} className="space-y-4 rounded-2xl border border-white/10 bg-[#111417] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid flex-1 gap-4 md:grid-cols-2">
                     <Input
@@ -359,19 +380,19 @@ const ResumeForm = ({
               </div>
             ))
           ) : (
-            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted">
+            <div className="rounded-lg border border-dashed border-white/15 px-4 py-6 text-sm text-muted">
               No projects added yet.
             </div>
           )}
         </div>
       </Card>
 
-      <Card className="space-y-5">
+      <Card className="space-y-5 border-white/5 bg-transparent p-0 shadow-none">
         {renderSectionHeader('Certifications', 'Track relevant certifications and credentials.', () => onSectionAdd('certifications'))}
         <div className="space-y-4">
           {resumeData.certifications.length > 0 ? (
             resumeData.certifications.map((item, index) => (
-              <div key={`certification-${index}`} className="rounded-xl border border-border bg-tertiary p-4 space-y-4">
+              <div key={`certification-${index}`} className="space-y-4 rounded-2xl border border-white/10 bg-[#111417] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid flex-1 gap-4 md:grid-cols-2">
                     <Input
@@ -401,7 +422,7 @@ const ResumeForm = ({
               </div>
             ))
           ) : (
-            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted">
+            <div className="rounded-lg border border-dashed border-white/15 px-4 py-6 text-sm text-muted">
               No certifications added yet.
             </div>
           )}

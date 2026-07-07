@@ -61,6 +61,7 @@ const getInitialResumeState = () => ({
   fileName: '',
   resumeData: createEmptyResumeData(),
   isDirty: false,
+  atsAnalytics: {},
 })
 
 export const useResumeBuilderStore = create((set) => ({
@@ -70,6 +71,7 @@ export const useResumeBuilderStore = create((set) => ({
       resumeId: resume?._id || null,
       fileName: resume?.fileName || '',
       resumeData: normalizeResumeData(resume),
+      atsAnalytics: resume?.atsAnalytics || resume?.atsScore || {},
       isDirty: false,
     }),
   setResumeData: (resumeData) =>

@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0f0f0f',
-        foreground: '#ffffff',
-        primary: '#e07856',
-        'primary-dark': '#d26a48',
-        secondary: '#2a2a2a',
-        tertiary: '#404040',
-        accent: '#4ade80',
-        border: '#2a2a2a',
-        muted: '#666666',
+        background: '#0b0c0c',
+        foreground: '#f7f1ef',
+        primary: '#b64f52',
+        'primary-dark': '#9e4145',
+        secondary: '#1b1b1b',
+        tertiary: '#262322',
+        accent: '#49d7ca',
+        border: '#342928',
+        muted: '#a79390',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

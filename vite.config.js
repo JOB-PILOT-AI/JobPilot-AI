@@ -12,8 +12,17 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': {
           target: apiTarget,
+          changeOrigin: true
+        },
+        '/auth/google/callback': {
+          target: apiTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
+          rewrite: (path) => path.replace(/^\/auth/, '/api/auth')
+        },
+        '/auth/github/callback': {
+          target: apiTarget,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/auth/, '/api/auth')
         }
       }
     }

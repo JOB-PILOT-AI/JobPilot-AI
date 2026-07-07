@@ -15,6 +15,9 @@ const __dirname = path.dirname(__filename)
 import authRoutes from './routes/auth.js'
 import resumeRoutes from './routes/resume.js'
 import jobRoutes from './routes/jobs.js'
+import caddieRoutes from './routes/caddie.js'
+import careerRoutes from './routes/career.js'
+import paymentRoutes, { razorpayWebhook } from './routes/payments.js'
 import { seedJobs } from './utils/seeder.js'
 
 const app = express()
@@ -22,6 +25,7 @@ const PORT = process.env.PORT || 5000
 
 // Middleware
 app.use(cors())
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), razorpayWebhook)
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
@@ -44,10 +48,13 @@ mongoose
     console.error('Full error:', err)
   })
 
-// Routes
-app.use('/auth', authRoutes)
-app.use('/resume', resumeRoutes)
-app.use('/jobs', jobRoutes)
+// API Routes (must be before static file serving)
+app.use('/api/auth', authRoutes) // Existing auth routes
+app.use('/api/resume', resumeRoutes) // Existing resume routes
+app.use('/api/jobs', jobRoutes) // Existing job routes
+app.use('/api/caddie', caddieRoutes)
+app.use('/api/career', careerRoutes)
+app.use('/api/payments', paymentRoutes)
 
 // Health check
 app.get('/health', (req, res) => {

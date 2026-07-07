@@ -2,6 +2,7 @@ import express from 'express'
 import Job from '../models/Job.js'
 import Application from '../models/Application.js'
 import Resume from '../models/Resume.js'
+import User from '../models/User.js'
 import { authenticateToken, authenticateOptional } from '../middleware/auth.js'
 import { applyJobFilters, normalizeJobFilters } from '../services/jobs/jobFilters.js'
 import { calculateJobMatch } from '../services/jobs/jobMatchEngine.js'
@@ -50,8 +51,23 @@ router.get('/', authenticateOptional, async (req, res) => {
 
 router.get('/matches', authenticateToken, async (req, res) => {
   try {
-    const limit = Math.max(1, Math.min(Number(req.query.limit) || 3, 10))
-    const resume = await Resume.findOne({ userId: req.user.userId }).sort({ updatedAt: -1 })
+    const [resume, user] = await Promise.all([
+      Resume.findOne({ userId: req.user.userId }).sort({ updatedAt: -1 }),
+      User.findById(req.user.userId),
+    ])
+    const requestedLimit = Number(req.query.limit) || 3
+    const limit = user?.isPro
+      ? Math.max(1, Math.min(requestedLimit, 25))
+      : Math.max(1, Math.min(requestedLimit, 3))
+
+    if (user?.privacyPreferences?.allowJobPersonalization === false) {
+      return res.json(
+        buildSuccessResponse(
+          { resume: null, atsAnalytics: null, bestMatch: null, matches: [], personalizationDisabled: true },
+          { resumeId: null, atsAnalytics: null, bestMatch: null, matches: [], personalizationDisabled: true }
+        )
+      )
+    }
 
     if (!resume) {
       return res.json(
@@ -89,12 +105,14 @@ router.get('/matches', authenticateToken, async (req, res) => {
           atsAnalytics,
           bestMatch: matches[0] || null,
           matches,
+          access: user?.isPro ? 'pro' : 'free',
         },
         {
           resumeId: resume._id,
           atsAnalytics,
           bestMatch: matches[0] || null,
           matches,
+          access: user?.isPro ? 'pro' : 'free',
         }
       )
     )
@@ -158,7 +176,14 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
     })
 
     if (existingApplication) {
-      return res.status(400).json(buildErrorResponse('Already applied to this job'))
+      const populatedApplication = await existingApplication.populate(['jobId', 'resumeId'])
+      return res.json(
+        buildSuccessResponse(populatedApplication, {
+          application: populatedApplication,
+          alreadyApplied: true,
+          message: 'You already applied to this job.',
+        })
+      )
     }
 
     const atsAnalytics = resume.atsAnalytics || calculateATSScore(resume.toObject())
@@ -197,6 +222,103 @@ router.get('/user/applications', authenticateToken, async (req, res) => {
     res.json(buildSuccessResponse(applications, { applications }))
   } catch (err) {
     res.status(500).json(buildErrorResponse('Failed to fetch applications', { error: err.message }))
+  }
+})
+
+router.patch('/applications/:id', authenticateToken, async (req, res) => {
+  try {
+    const allowedStatuses = new Set([
+      'applied', 'reviewing', 'shortlisted', 'screening', 'interview',
+      'offer', 'rejected', 'accepted', 'withdrawn',
+    ])
+    const updates = {}
+
+    if (req.body.status !== undefined) {
+      if (!allowedStatuses.has(req.body.status)) {
+        return res.status(400).json(buildErrorResponse('Invalid application status'))
+      }
+      updates.status = req.body.status
+      updates.statusUpdatedAt = new Date()
+    }
+    if (req.body.notes !== undefined) updates.notes = String(req.body.notes).slice(0, 5000)
+    if (req.body.nextAction !== undefined) updates.nextAction = String(req.body.nextAction).slice(0, 500)
+    if (req.body.nextActionAt !== undefined) {
+      updates.nextActionAt = req.body.nextActionAt ? new Date(req.body.nextActionAt) : null
+    }
+
+    const application = await Application.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId },
+      updates,
+      { new: true, runValidators: true }
+    ).populate('jobId')
+
+    if (!application) return res.status(404).json(buildErrorResponse('Application not found'))
+    res.json(buildSuccessResponse(application, { application }))
+  } catch (err) {
+    res.status(500).json(buildErrorResponse('Failed to update application', { error: err.message }))
+  }
+})
+
+router.get('/saved/list', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+
+    const saved = (user.jobMatches || []).map((item) => String(item.jobId))
+    res.json({ success: true, saved })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch saved jobs', error: err.message })
+  }
+})
+
+router.post('/:id/save', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+
+    const exists = (user.jobMatches || []).some((item) => String(item.jobId) === req.params.id)
+    if (!exists) {
+      user.jobMatches.push({
+        jobId: req.params.id,
+        matchScore: req.body.matchScore || null,
+        savedAt: new Date(),
+      })
+      await user.save()
+    }
+    res.json({ success: true, saved: true })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to save job', error: err.message })
+  }
+})
+
+router.patch('/:id/save', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    const savedJob = (user.jobMatches || []).find((item) => String(item.jobId) === req.params.id)
+    if (!savedJob) return res.status(404).json({ message: 'Saved job not found' })
+
+    if (req.body.notes !== undefined) savedJob.notes = String(req.body.notes).slice(0, 5000)
+    if (req.body.nextAction !== undefined) savedJob.nextAction = String(req.body.nextAction).slice(0, 500)
+    if (req.body.nextActionAt !== undefined) {
+      savedJob.nextActionAt = req.body.nextActionAt ? new Date(req.body.nextActionAt) : null
+    }
+    await user.save()
+    res.json({ success: true, savedJob })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update saved job', error: err.message })
+  }
+})
+
+router.delete('/:id/save', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    user.jobMatches = (user.jobMatches || []).filter((item) => String(item.jobId) !== req.params.id)
+    await user.save()
+    res.json({ success: true, removed: true })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to remove saved job', error: err.message })
   }
 })
 

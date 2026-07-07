@@ -63,6 +63,29 @@ const countKeywordRichness = (normalizedSkills, resumeText) => {
   return uniqueMatches.size
 }
 
+const countNumericMetricsInExperience = (experience) => {
+  const text = (Array.isArray(experience) ? experience : []).map((e) => JSON.stringify(e || {})).join(' ')
+  const matches = text.match(/\b\d{1,3}%?\b/g)
+  return matches ? matches.length : 0
+}
+
+const hasActionVerbInExperience = (experience) => {
+  const actionVerbs = ['led', 'developed', 'built', 'designed', 'implemented', 'launched', 'improved', 'reduced', 'increased', 'optimized', 'managed', 'created', 'owned', 'ship', 'automated', 'scaled']
+  const text = (Array.isArray(experience) ? experience : []).map((e) => JSON.stringify(e || {})).join(' ').toLowerCase()
+  return actionVerbs.some((v) => text.includes(v))
+}
+
+const hasConciseBullets = (experience) => {
+  // Check that descriptions contain multiple short sentences or bullet-like entries
+  for (const item of Array.isArray(experience) ? experience : []) {
+    const desc = String(item.description || '')
+    if (!desc) continue
+    const sentences = desc.split(/[\.\n]/).map((s) => s.trim()).filter(Boolean)
+    if (sentences.length >= 2 && sentences.every((s) => s.split(' ').length <= 30)) return true
+  }
+  return false
+}
+
 export const buildATSContext = (resume = {}) => {
   const personalInfo = resume.personalInfo || {}
   const experience = getExperienceItems(resume)
@@ -226,5 +249,29 @@ export const atsRules = [
     points: 11,
     validate: (context) => context.technicalCategories.length >= 3,
     recommendation: 'Broaden technical coverage across frontend, backend, deployment, and modern stack skills',
+  },
+  {
+    id: 'content-quantified-achievements',
+    title: 'Quantified achievements present',
+    category: 'Resume Content',
+    points: 10,
+    validate: (context) => countNumericMetricsInExperience(context.experience) >= 1,
+    recommendation: 'Add measurable outcomes (numbers, percentages, metrics) to your experience bullets',
+  },
+  {
+    id: 'content-action-verbs',
+    title: 'Action-oriented language',
+    category: 'Resume Content',
+    points: 6,
+    validate: (context) => hasActionVerbInExperience(context.experience),
+    recommendation: 'Use action verbs (led, developed, improved) to describe impact',
+  },
+  {
+    id: 'content-concise-bullets',
+    title: 'Concise bullet-style results',
+    category: 'Resume Content',
+    points: 5,
+    validate: (context) => hasConciseBullets(context.experience),
+    recommendation: 'Use short bullet points (1-2 lines) for each achievement or responsibility',
   },
 ]

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">JobPilot AI logo mark</title>
+  <desc id="desc">A gradient JP monogram with an upward arrow.</desc>
+  <defs>
+    <linearGradient id="jp-blue" x1="127" x2="310" y1="160" y2="413" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5f83f6"/>
+      <stop offset=".54" stop-color="#526bd0"/>
+      <stop offset="1" stop-color="#30438a"/>
+    </linearGradient>
+    <linearGradient id="jp-red" x1="264" x2="410" y1="155" y2="392" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff7d7d"/>
+      <stop offset=".52" stop-color="#ec6065"/>
+      <stop offset="1" stop-color="#9b3d58"/>
+    </linearGradient>
+    <linearGradient id="jp-arrow" x1="229" x2="429" y1="348" y2="127" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7a416f"/>
+      <stop offset=".45" stop-color="#ea646d"/>
+      <stop offset="1" stop-color="#ff8984"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="80" y="90" width="380" height="360" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="20" flood-color="#000611" flood-opacity=".35" stdDeviation="13"/>
+    </filter>
+    <clipPath id="p-cut">
+      <path d="M254 140h82c28 0 52 10 71 29 19 18 29 42 29 70s-10 51-29 70c-19 18-43 28-71 28h-82v-58h78c12 0 22-4 30-12 9-8 13-18 13-30s-4-22-13-31c-8-8-18-12-30-12h-18v176c0 28-10 51-29 69-18 18-42 27-71 27h-12c25-13 52-46 52-88V140Z"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#020817"/>
+  <g filter="url(#soft-shadow)">
+    <path fill="url(#jp-blue)" d="M126 268h58v70c0 18 5 32 15 42 10 11 24 16 41 16s30-5 40-16 15-25 15-43V140h59v198c0 36-10 65-31 86-21 22-49 33-83 33-35 0-63-11-83-32-21-21-31-50-31-87v-70Z"/>
+    <path fill="url(#jp-red)" d="M254 140h82c28 0 52 10 71 29 19 18 29 42 29 70s-10 51-29 70c-19 18-43 28-71 28h-82v-58h78c12 0 22-4 30-12 9-8 13-18 13-30s-4-22-13-31c-8-8-18-12-30-12h-18v176c0 28-10 51-29 69-18 18-42 27-71 27h-12c25-13 52-46 52-88V140Z"/>
+    <g clip-path="url(#p-cut)" opacity=".32">
+      <path fill="#190a18" d="M255 307 385 178l-46 126-59 75-25-13V307Z"/>
+    </g>
+    <path fill="url(#jp-arrow)" d="m243 309 158-156-54-18 102-42-42 102-18-54-107 124 93-73-114 138-18-21Z"/>
+    <path fill="#0a0d17" fill-opacity=".35" d="m242 309 40-44 30-26-52 90-18-20Z"/>
+  </g>
+</svg>

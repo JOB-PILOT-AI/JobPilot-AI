@@ -40,9 +40,9 @@ export const createEmptyCertificationItem = () => ({
 export const createEmptyResumeData = () => ({
   personalInfo: createEmptyPersonalInfo(),
   skills: [],
-  education: [],
-  experience: [],
-  projects: [],
+  education: [createEmptyEducationItem()],
+  experience: [createEmptyExperienceItem()],
+  projects: [createEmptyProjectItem()],
   certifications: [],
 })
 
@@ -85,7 +85,7 @@ const normalizeExperienceItem = (item = {}) => ({
 })
 
 const normalizeProjectItem = (item = {}) => ({
-  name: normalizeText(item.name),
+  name: normalizeText(item.name || item.title),
   description: normalizeText(item.description),
   technologies: normalizeStringArray(
     Array.isArray(item.technologies)

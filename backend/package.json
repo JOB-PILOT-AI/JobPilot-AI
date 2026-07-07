@@ -1,0 +1,39 @@
+{
+  "name": "jobpilot-backend",
+  "version": "1.0.0",
+  "description": "JobPilot Backend - AI-powered resume and job matching platform",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.3.0",
+    "bcryptjs": "^2.4.3",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.0",
+    "langchain": "^0.0.59",
+    "mammoth": "^1.12.0",
+    "mongoose": "^7.0.0",
+    "multer": "^2.1.1",
+    "node-cron": "^3.0.2",
+    "nodemailer": "^8.0.8",
+    "openai": "^3.2.1",
+    "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
+    "passport-google-oauth20": "^2.0.0",
+    "pdf-parse": "^2.4.5",
+    "puppeteer": "^19.0.0",
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "nodemon": "^2.0.20"
+  }
+}

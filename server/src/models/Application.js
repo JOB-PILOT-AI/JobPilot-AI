@@ -19,7 +19,7 @@ const applicationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['applied', 'reviewing', 'shortlisted', 'rejected', 'accepted'],
+      enum: ['applied', 'reviewing', 'shortlisted', 'screening', 'interview', 'offer', 'rejected', 'accepted', 'withdrawn'],
       default: 'applied',
     },
     matchScore: {
@@ -36,6 +36,8 @@ const applicationSchema = new mongoose.Schema(
     appliedAt: { type: Date, default: Date.now },
     statusUpdatedAt: Date,
     notes: String,
+    nextAction: String,
+    nextActionAt: Date,
   },
   { timestamps: true }
 )

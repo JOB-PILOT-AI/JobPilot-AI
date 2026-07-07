@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 420" role="img" aria-labelledby="title desc">
+  <title id="title">JobPilot AI</title>
+  <desc id="desc">JobPilot AI logo with JP arrow mark and Career Intelligence tagline.</desc>
+  <defs>
+    <linearGradient id="text-red" x1="475" x2="820" y1="265" y2="265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff827e"/>
+      <stop offset="1" stop-color="#e45761"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="826" x2="928" y1="218" y2="310" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6688ff"/>
+      <stop offset=".5" stop-color="#d96794"/>
+      <stop offset="1" stop-color="#ff7771"/>
+    </linearGradient>
+  </defs>
+  <rect width="1100" height="420" rx="48" fill="#020817"/>
+  <image href="/jobpilot-logo-mark.svg" x="390" y="28" width="320" height="320"/>
+  <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="850">
+    <text x="190" y="286" fill="#f8fafc" font-size="96" letter-spacing="-5">Job</text>
+    <text x="438" y="286" fill="url(#text-red)" font-size="96" letter-spacing="-5">Pilot</text>
+    <rect x="810" y="216" width="92" height="84" rx="18" fill="none" stroke="url(#badge)" stroke-width="4"/>
+    <text x="832" y="279" fill="#f8fafc" font-size="56" letter-spacing="-2">AI</text>
+  </g>
+  <rect x="438" y="337" width="82" height="4" rx="2" fill="#587cff"/>
+  <rect x="520" y="337" width="102" height="4" rx="2" fill="#ee636b"/>
+  <text x="310" y="388" fill="#d8dde8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="30" font-weight="500" letter-spacing="22">CAREER INTELLIGENCE</text>
+</svg>
