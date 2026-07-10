@@ -11,6 +11,8 @@ import { dedupeJobs } from '../services/jobs/detectDuplicate.js'
 import { ingestJob } from '../services/jobs/ingestJob.js'
 import { importRemotiveJobs } from '../services/jobs/importRemotiveJobs.js'
 import { importRemoteOKJobs } from '../services/jobs/importRemoteOKJobs.js'
+import { importHimalayasJobs } from '../services/jobs/importHimalayasJobs.js'
+import { importArbeitnowJobs } from '../services/jobs/importArbeitnowJobs.js'
 import { toCanonicalJob } from '../utils/jobTransforms.js'
 
 const router = express.Router()
@@ -158,6 +160,87 @@ router.get('/import/remoteok', authenticateToken, async (req, res) => {
       skipped: 0,
     })
   }
+})
+
+router.get('/import/himalayas', authenticateToken, async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 50))
+    const result = await importHimalayasJobs({ limit })
+
+    res.json(result)
+  } catch (err) {
+    res.status(200).json({
+      success: true,
+      imported: 0,
+      skipped: 0,
+      failure: err.message,
+    })
+  }
+})
+
+router.get('/import/arbeitnow', authenticateToken, async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 50))
+    const result = await importArbeitnowJobs({ limit })
+
+    res.json(result)
+  } catch (err) {
+    res.status(200).json({
+      success: true,
+      imported: 0,
+      skipped: 0,
+      failure: err.message,
+    })
+  }
+})
+
+router.get('/import/all', authenticateToken, async (req, res) => {
+  const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 50))
+  const sources = {
+    remoteok: importRemoteOKJobs,
+    remotive: importRemotiveJobs,
+    himalayas: importHimalayasJobs,
+    arbeitnow: importArbeitnowJobs,
+  }
+  const results = {}
+
+  for (const [source, importer] of Object.entries(sources)) {
+    try {
+      results[source] = await importer({ limit })
+    } catch (err) {
+      console.error(`${source} import failed:`, err.message)
+      results[source] = {
+        success: true,
+        imported: 0,
+        skipped: 0,
+        counts: {
+          fetched: 0,
+          normalized: 0,
+          accepted: 0,
+          rejected: 0,
+          duplicates: 0,
+          inserted: 0,
+        },
+        rejectedReasons: {},
+        failure: err.message,
+      }
+    }
+  }
+
+  const groupedRejectionReasons = Object.values(results).reduce((acc, result) => {
+    for (const [reason, count] of Object.entries(result.rejectedReasons || {})) {
+      acc[reason] = (acc[reason] || 0) + count
+    }
+    return acc
+  }, {})
+  const totalDbJobCount = await Job.countDocuments({ isActive: true })
+
+  res.json({
+    success: true,
+    sources: results,
+    totalDbJobCount,
+    groupedRejectionReasons,
+  })
 })
 
 router.get('/import/remotive', authenticateToken, async (req, res) => {

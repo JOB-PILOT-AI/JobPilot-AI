@@ -15,7 +15,6 @@ const __dirname = path.dirname(__filename)
 import authRoutes from './routes/auth.js'
 import resumeRoutes from './routes/resume.js'
 import jobRoutes from './routes/jobs.js'
-import { seedJobs } from './utils/seeder.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -32,12 +31,8 @@ console.log('Attempting to connect to MongoDB at:', MONGODB_URI)
 
 mongoose
   .connect(MONGODB_URI)
-  .then(async () => {
+  .then(() => {
     console.log(' Connected to MongoDB successfully')
-
-    if (process.env.NODE_ENV !== 'production') {
-      await seedJobs()
-    }
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err.message)

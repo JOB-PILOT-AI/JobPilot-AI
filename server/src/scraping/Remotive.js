@@ -125,29 +125,36 @@ const buildRemotiveJobCandidate = (entry = {}) => {
 	})
 
 	if (!analysis.accepted) {
-		return null
+		return { job: null, reason: analysis.reason || 'rejected' }
 	}
 
 	return {
-		id: String(entry.id || ''),
-		title,
-		company,
-		location,
-		remoteType: normalizeRemotiveRemoteType(location, description),
-		employmentType: normalizeRemotiveEmploymentType(entry.job_type),
-		description,
-		responsibilities,
-		requiredSkills: extractedSkills.slice(0, 8),
-		preferredSkills: normalizeSkills(tags),
-		extractedSkills,
-		category: cleanText(entry.category || 'Software Development'),
-		source: 'remotive',
-		sourceUrl,
-		postedAt: normalizedPostedAt,
-		createdAt: normalizedPostedAt,
-		updatedAt: normalizedPostedAt,
-		salaryRange: parseSalaryRange(entry.salary),
-		salary: parseSalaryRange(entry.salary),
+		job: {
+			id: String(entry.id || ''),
+			title,
+			company,
+			location,
+			remoteType: normalizeRemotiveRemoteType(location, description),
+			employmentType: normalizeRemotiveEmploymentType(entry.job_type),
+			description,
+			responsibilities,
+			requiredSkills: extractedSkills.slice(0, 8),
+			preferredSkills: normalizeSkills(tags),
+			extractedSkills,
+			category: cleanText(entry.category || 'Software Development'),
+			source: 'remotive',
+			sourceJobId: String(entry.id || ''),
+			sourceUrl,
+			originalApplyUrl: sourceUrl || null,
+			sourceJobUrl: sourceUrl || null,
+			companyWebsite: null,
+			postedAt: normalizedPostedAt,
+			createdAt: normalizedPostedAt,
+			updatedAt: normalizedPostedAt,
+			salaryRange: parseSalaryRange(entry.salary),
+			salary: parseSalaryRange(entry.salary),
+		},
+		reason: null,
 	}
 }
 
@@ -166,11 +173,34 @@ export const scrapeRemotiveJobs = async ({ limit = MAX_REMOTIVE_JOBS } = {}) => 
 	})
 
 	const jobs = Array.isArray(response.data?.jobs) ? response.data.jobs : []
+	const stats = {
+		fetched: jobs.length,
+		normalized: 0,
+		accepted: 0,
+		rejected: 0,
+		rejectedReasons: {},
+	}
 
-	return jobs
-		.map((entry) => buildRemotiveJobCandidate(entry))
+	const candidates = jobs
+		.map((entry) => {
+			const result = buildRemotiveJobCandidate(entry)
+			stats.normalized += 1
+
+			if (!result.job) {
+				stats.rejected += 1
+				stats.rejectedReasons[result.reason] = (stats.rejectedReasons[result.reason] || 0) + 1
+				return null
+			}
+
+			stats.accepted += 1
+			return result.job
+		})
 		.filter(Boolean)
 		.slice(0, Math.max(1, Math.min(Number(limit) || MAX_REMOTIVE_JOBS, MAX_REMOTIVE_JOBS)))
+
+	candidates.stats = stats
+
+	return candidates
 }
 
 export default {

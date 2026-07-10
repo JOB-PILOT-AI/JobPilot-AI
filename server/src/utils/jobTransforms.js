@@ -262,6 +262,9 @@ const toCanonicalJob = (job = {}) => {
   const title = cleanText(job.title)
   const source = cleanText(job.source || job.jobSource) || 'manual'
   const sourceUrl = normalizeUrl(job.sourceUrl)
+  const sourceJobUrl = normalizeUrl(job.sourceJobUrl || sourceUrl) || null
+  const originalApplyUrl = normalizeUrl(job.originalApplyUrl || job.applyUrl || sourceJobUrl || job.companyWebsite) || null
+  const companyWebsite = normalizeUrl(job.companyWebsite) || null
   const requiredSkills = normalizeSkillList(job.requiredSkills)
   const preferredSkills = normalizeSkillList(job.preferredSkills)
   const extractedSkills = normalizeSkillList(job.extractedSkills?.length ? job.extractedSkills : extractJobSkills(job))
@@ -288,6 +291,10 @@ const toCanonicalJob = (job = {}) => {
     category,
     source,
     sourceUrl,
+    sourceJobId: cleanText(job.sourceJobId || job.id),
+    originalApplyUrl,
+    sourceJobUrl,
+    companyWebsite,
     postedAt: job.postedAt ? new Date(job.postedAt) : job.createdAt ? new Date(job.createdAt) : new Date(),
     createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
     updatedAt: job.updatedAt ? new Date(job.updatedAt) : job.createdAt ? new Date(job.createdAt) : new Date(),
