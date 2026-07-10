@@ -64,11 +64,15 @@ export default function Dashboard() {
   const [uploadError, setUploadError] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState('')
   const fileInputRef = useRef(null)
+  const loadedTokenRef = useRef('')
 
   useEffect(() => {
-    if (token) {
-      fetchDashboardData()
+    if (!token || loadedTokenRef.current === token) {
+      return
     }
+
+    loadedTokenRef.current = token
+    fetchDashboardData()
   }, [token])
 
   const fetchDashboardData = async () => {

@@ -40,4 +40,7 @@ const applicationSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
+applicationSchema.index({ userId: 1, jobId: 1 })
+applicationSchema.index({ userId: 1, appliedAt: -1 })
+
 export default mongoose.model('Application', applicationSchema)

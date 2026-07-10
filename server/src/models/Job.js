@@ -113,5 +113,7 @@ const jobSchema = new mongoose.Schema(
 jobSchema.index({ sourceUrl: 1 })
 jobSchema.index({ source: 1, sourceJobId: 1 })
 jobSchema.index({ companyNormalized: 1, locationNormalized: 1, title: 1 })
+jobSchema.index({ isActive: 1, updatedAt: -1, createdAt: -1 })
+jobSchema.index({ isActive: 1, remoteType: 1, employmentType: 1 })
 
 export default mongoose.model('Job', jobSchema)

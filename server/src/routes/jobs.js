@@ -17,6 +17,51 @@ import { toCanonicalJob } from '../utils/jobTransforms.js'
 
 const router = express.Router()
 
+const JOB_MATCH_SELECT = [
+  'source',
+  'sourceUrl',
+  'sourceJobId',
+  'originalApplyUrl',
+  'sourceJobUrl',
+  'companyWebsite',
+  'title',
+  'company',
+  'companyNormalized',
+  'location',
+  'locationNormalized',
+  'remoteType',
+  'locationType',
+  'employmentType',
+  'category',
+  'description',
+  'requiredSkills',
+  'preferredSkills',
+  'extractedSkills',
+  'responsibilities',
+  'salary',
+  'salaryRange',
+  'experience',
+  'experienceLevel',
+  'postedAt',
+  'createdAt',
+  'updatedAt',
+  'isActive',
+].join(' ')
+
+const buildJobQuery = (filters = {}) => {
+  const query = { isActive: true }
+
+  if (filters.remoteType) {
+    query.remoteType = filters.remoteType
+  }
+
+  if (filters.employmentType) {
+    query.employmentType = filters.employmentType
+  }
+
+  return query
+}
+
 const getLatestResumeForUser = async (userId) => {
   if (!userId) {
     return null
@@ -36,6 +81,13 @@ const buildSerializedJobs = (jobs, resume = null, atsAnalytics = null) => {
   })
 }
 
+const truncateText = (value = '', maxLength = 220) => {
+  if (typeof value !== 'string') return ''
+  const cleaned = value.replace(/\s+/g, ' ').trim()
+  if (cleaned.length <= maxLength) return cleaned
+  return `${cleaned.slice(0, maxLength).trim()}...`
+}
+
 const serializeJob = (job, matchData = null) => {
   const canonicalJob = toCanonicalJob(job)
 
@@ -53,18 +105,52 @@ const serializeJob = (job, matchData = null) => {
   }
 }
 
+const serializeJobSummary = (job, matchData = null) => {
+  const serialized = serializeJob(job, matchData)
+
+  return {
+    _id: serialized._id,
+    id: serialized.id,
+    title: serialized.title,
+    company: serialized.company,
+    companyLogo: job.companyLogo || null,
+    location: serialized.location,
+    remoteType: serialized.remoteType,
+    locationType: serialized.locationType,
+    employmentType: serialized.employmentType,
+    category: serialized.category,
+    jobCategory: serialized.jobCategory,
+    description: truncateText(serialized.description),
+    requiredSkills: serialized.requiredSkills.slice(0, 8),
+    preferredSkills: serialized.preferredSkills.slice(0, 8),
+    tags: serialized.preferredSkills.slice(0, 8),
+    salary: serialized.salary,
+    salaryRange: serialized.salaryRange,
+    source: serialized.source,
+    sourceUrl: serialized.sourceUrl,
+    postedAt: serialized.postedAt,
+    matchScore: matchData,
+    isActive: serialized.isActive,
+  }
+}
+
 router.get('/', authenticateOptional, async (req, res) => {
   try {
+    const filters = normalizeJobFilters(req.query)
     const jobs = dedupeJobs(
-      await Job.find({ isActive: true })
+      await Job.find(buildJobQuery(filters))
+        .select(JOB_MATCH_SELECT)
+        .lean()
         .sort({ updatedAt: -1, createdAt: -1 })
         .limit(100)
     )
 
     const resume = req.user ? await getLatestResumeForUser(req.user.userId) : null
     const atsAnalytics = resume ? resume.atsAnalytics || calculateATSScore(resume.toObject()) : null
-    const matchedJobs = buildSerializedJobs(jobs, resume, atsAnalytics)
-    const filteredJobs = applyJobFilters(matchedJobs, normalizeJobFilters(req.query))
+    const matchedJobs = resume
+      ? jobs.map((job) => serializeJobSummary(job, calculateJobMatch(resume, job, { atsAnalytics })))
+      : jobs.map((job) => serializeJobSummary(job))
+    const filteredJobs = applyJobFilters(matchedJobs, filters)
 
     res.json(buildSuccessResponse(filteredJobs, { jobs: filteredJobs }))
   } catch (err) {
@@ -75,6 +161,7 @@ router.get('/', authenticateOptional, async (req, res) => {
 router.get('/matches', authenticateToken, async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(Number(req.query.limit) || 3, 10))
+    const filters = normalizeJobFilters(req.query)
     const resume = await Resume.findOne({ userId: req.user.userId }).sort({ updatedAt: -1 })
 
     if (!resume) {
@@ -88,7 +175,9 @@ router.get('/matches', authenticateToken, async (req, res) => {
 
     const atsAnalytics = resume.atsAnalytics || calculateATSScore(resume.toObject())
     const jobs = dedupeJobs(
-      await Job.find({ isActive: true })
+      await Job.find(buildJobQuery(filters))
+        .select(JOB_MATCH_SELECT)
+        .lean()
         .sort({ updatedAt: -1, createdAt: -1 })
         .limit(100)
     )
@@ -97,10 +186,10 @@ router.get('/matches', authenticateToken, async (req, res) => {
     const normalizedMatches = jobs.map((job) => {
       const matchData = calculateJobMatch(resume, job, { atsAnalytics })
       matchMap.set(String(job._id), matchData)
-      return serializeJob(job, matchData)
+      return serializeJobSummary(job, matchData)
     })
 
-    const filteredMatches = applyJobFilters(normalizedMatches, req.query, matchMap)
+    const filteredMatches = applyJobFilters(normalizedMatches, filters, matchMap)
 
     const matches = filteredMatches
       .sort((left, right) => (right.matchScore?.matchPercentage || 0) - (left.matchScore?.matchPercentage || 0))
@@ -322,7 +411,7 @@ router.get('/user/applications', authenticateToken, async (req, res) => {
 
 router.get('/:id', authenticateOptional, async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id)
+    const job = await Job.findById(req.params.id).lean()
     if (!job) {
       return res.status(404).json(buildErrorResponse('Job not found'))
     }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { format } from 'date-fns'
@@ -524,8 +524,15 @@ export default function SkillDNA() {
   const [selectedJobId, setSelectedJobId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const loadedTokenRef = useRef('')
 
   useEffect(() => {
+    const loadKey = token || 'anonymous'
+    if (loadedTokenRef.current === loadKey) {
+      return
+    }
+
+    loadedTokenRef.current = loadKey
     loadSkillDNA()
   }, [token])
 
