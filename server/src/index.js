@@ -39,12 +39,8 @@ console.log('Attempting to connect to MongoDB at:', MONGODB_URI)
 
 mongoose
   .connect(MONGODB_URI)
-  .then(async () => {
+  .then(() => {
     console.log(' Connected to MongoDB successfully')
-
-    if (process.env.NODE_ENV !== 'production') {
-      await seedJobs()
-    }
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err.message)

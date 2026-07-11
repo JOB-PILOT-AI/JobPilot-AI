@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [uploadError, setUploadError] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState('')
   const fileInputRef = useRef(null)
+  const loadedTokenRef = useRef('')
 
   useEffect(() => {
     if (token) fetchDashboardData()

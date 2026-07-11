@@ -482,7 +482,11 @@ const buildFeedJobCandidate = (entry) => {
     extractedSkills: canonicalSkills,
     category: tags[0] || 'technology',
     source: 'remoteok',
+    sourceJobId: String(entry.id || entry.slug || ''),
     sourceUrl,
+    originalApplyUrl: applyUrl || sourceUrl || null,
+    sourceJobUrl: sourceUrl || null,
+    companyWebsite: null,
     applyUrl,
     postedAt,
     createdAt: postedAt,
@@ -526,7 +530,11 @@ const buildJobCandidate = ($, $row) => {
     extractedSkills: canonicalSkills,
     category: tags[0] || '',
     source: 'remoteok',
+    sourceJobId: String(jobId || ''),
     sourceUrl,
+    originalApplyUrl: applyUrl || sourceUrl || null,
+    sourceJobUrl: sourceUrl || null,
+    companyWebsite: null,
     applyUrl,
     postedAt,
     createdAt: postedAt,
@@ -631,6 +639,14 @@ export const scrapeRemoteOKJobs = async ({ limit = MAX_REMOTEOK_JOBS } = {}) => 
   if (rejectionSamples.length) {
     console.info('[RemoteOK] Sample rejected jobs (up to 20):', rejectionSamples.slice(0, 20))
   }
+  candidates.stats = {
+    fetched: stats.rawJobsFetched,
+    normalized: stats.jobsAfterCleanup,
+    accepted: stats.jobsAccepted,
+    rejected: stats.jobsRejected,
+    rejectedReasons: stats.rejectedReasons,
+  }
+
   return candidates
 }
 
