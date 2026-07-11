@@ -7,6 +7,10 @@
     {
       "source": "/health",
       "destination": "https://jobpilot-ai-92r6.onrender.com/health"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }
