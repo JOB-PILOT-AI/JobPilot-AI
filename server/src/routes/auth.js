@@ -11,6 +11,7 @@ const router = express.Router()
 const getJwtSecret = () => process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'your-secret-key')
 const trimUrl = (value = '') => String(value).trim().replace(/\/+$/, '')
 const stripApiSuffix = (value) => trimUrl(value).replace(/\/api$/, '')
+const isLocalUrl = (value = '') => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(?:\/|$)/i.test(trimUrl(value))
 
 const createToken = (user) =>
   jwt.sign(
@@ -63,7 +64,9 @@ const getServerUrl = (req) => {
     process.env.API_URL ||
     process.env.BASE_URL
 
-  if (configuredUrl) return stripApiSuffix(configuredUrl)
+  if (configuredUrl && !(process.env.NODE_ENV === 'production' && isLocalUrl(configuredUrl))) {
+    return stripApiSuffix(configuredUrl)
+  }
 
   if (process.env.NODE_ENV === 'production') {
     const forwardedProtocol = req.get('x-forwarded-proto')?.split(',')[0]?.trim()
