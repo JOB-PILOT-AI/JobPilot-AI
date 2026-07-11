@@ -1,24 +1,13 @@
 #!/usr/bin/env node
-import { fileURLToPath } from 'url'
-import path from 'path'
-import Module from 'module'
+/**
+ * Start script for JobPilot Backend
+ * Loads the backend server entry point with proper module resolution
+ */
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// Add backend's node_modules to module search paths
-const backendNodeModules = path.join(__dirname, 'node_modules')
-Module.globalPaths.push(backendNodeModules)
-
-// Import and start the server
-const projectRoot = path.resolve(__dirname, '..')
-const serverPath = path.join(projectRoot, 'server', 'src', 'index.js')
-
-try {
-  const serverUrl = new URL(`file://${serverPath}`)
-  await import(serverUrl.href)
-} catch (err) {
-  console.error('Failed to start server:', err.message)
+// Direct import of the backend entry point
+// This ensures all modules are resolved from backend/node_modules
+import('./src/index.js').catch(err => {
+  console.error('Failed to start server:', err)
   process.exit(1)
-}
+})
 
