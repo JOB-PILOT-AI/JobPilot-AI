@@ -1,11 +1,11 @@
 services:
   - type: web
     name: jobpilot-backend
-    rootDir: backend
+    root: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NODE_VERSION
-        value: "20"
+      - key: NODE_PATH
+        value: ./node_modules

@@ -1,27 +1,24 @@
 #!/usr/bin/env node
 import { fileURLToPath } from 'url'
 import path from 'path'
-import { spawn } from 'child_process'
+import Module from 'module'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Resolve the path to server from backend folder
-const serverPath = path.join(__dirname, '..', 'server', 'src', 'index.js')
+// Add backend's node_modules to module search paths
+const backendNodeModules = path.join(__dirname, 'node_modules')
+Module.globalPaths.push(backendNodeModules)
 
-const child = spawn('node', [serverPath], {
-  stdio: 'inherit',
-  cwd: __dirname
-})
+// Import and start the server
+const projectRoot = path.resolve(__dirname, '..')
+const serverPath = path.join(projectRoot, 'server', 'src', 'index.js')
 
-process.on('SIGTERM', () => {
-  child.kill('SIGTERM')
-})
+try {
+  const serverUrl = new URL(`file://${serverPath}`)
+  await import(serverUrl.href)
+} catch (err) {
+  console.error('Failed to start server:', err.message)
+  process.exit(1)
+}
 
-process.on('SIGINT', () => {
-  child.kill('SIGINT')
-})
-
-child.on('exit', (code) => {
-  process.exit(code)
-})
