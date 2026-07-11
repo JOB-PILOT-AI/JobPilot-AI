@@ -29,6 +29,10 @@ const PORT = process.env.PORT || 5000
 const isProduction = process.env.NODE_ENV === 'production'
 const distPath = path.resolve(__dirname, '../../dist')
 
+if (isProduction) {
+  app.set('trust proxy', 1)
+}
+
 const normalizeOrigins = (value = '') =>
   String(value)
     .split(',')

@@ -12,5 +12,11 @@ services:
         value: https://jobpilot-livid-omega.vercel.app
       - key: VITE_CLIENT_URL
         value: https://jobpilot-livid-omega.vercel.app
+      - key: SERVER_URL
+        value: https://jobpilot-ai-92r6.onrender.com
+      - key: BACKEND_URL
+        value: https://jobpilot-ai-92r6.onrender.com
+      - key: VITE_API_URL
+        value: https://jobpilot-ai-92r6.onrender.com
       - key: CORS_ORIGIN
         value: https://jobpilot-livid-omega.vercel.app

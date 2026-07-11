@@ -5,6 +5,10 @@
       "dest": "https://jobpilot-ai-92r6.onrender.com/api/$1"
     },
     {
+      "src": "/auth/(.*)",
+      "dest": "https://jobpilot-ai-92r6.onrender.com/api/auth/$1"
+    },
+    {
       "src": "/health",
       "dest": "https://jobpilot-ai-92r6.onrender.com/health"
     },

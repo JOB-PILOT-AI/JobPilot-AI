@@ -9,6 +9,8 @@ import { authenticateToken } from '../middleware/auth.js'
 
 const router = express.Router()
 const getJwtSecret = () => process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'your-secret-key')
+const trimUrl = (value = '') => String(value).trim().replace(/\/+$/, '')
+const stripApiSuffix = (value) => trimUrl(value).replace(/\/api$/, '')
 
 const createToken = (user) =>
   jwt.sign(
@@ -43,14 +45,39 @@ const publicUser = (user) => ({
 const getAppUrl = (req) => {
   const requestOrigin = req.get('origin')
   if (process.env.NODE_ENV !== 'production' && requestOrigin) {
-    return requestOrigin.replace(/\/$/, '')
+    return trimUrl(requestOrigin)
   }
 
   const configuredUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.VITE_CLIENT_URL
-  if (configuredUrl) return configuredUrl.replace(/\/$/, '')
+  if (configuredUrl) return trimUrl(configuredUrl)
 
   return `${req.protocol}://${req.get('host')}`.replace(/:\d+$/, ':5174')
 }
+
+const getServerUrl = (req) => {
+  const configuredUrl =
+    process.env.SERVER_URL ||
+    process.env.BACKEND_URL ||
+    process.env.VITE_BACKEND_URL ||
+    process.env.VITE_API_URL ||
+    process.env.API_URL ||
+    process.env.BASE_URL
+
+  if (configuredUrl) return stripApiSuffix(configuredUrl)
+
+  if (process.env.NODE_ENV === 'production') {
+    const forwardedProtocol = req.get('x-forwarded-proto')?.split(',')[0]?.trim()
+    const forwardedHost = req.get('x-forwarded-host')?.split(',')[0]?.trim()
+    return `${forwardedProtocol || req.protocol}://${forwardedHost || req.get('host')}`.replace(/\/$/, '')
+  }
+
+  const requestHost = req.get('host')
+  if (requestHost) return stripApiSuffix(`${req.protocol}://${requestHost}`)
+
+  return `http://localhost:${process.env.PORT || 3001}`
+}
+
+const getOAuthCallbackUrl = (req, provider) => `${getServerUrl(req)}/api/auth/${provider}/callback`
 
 const getSafeNextPath = (value) => {
   if (!value || typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) {
@@ -158,7 +185,7 @@ router.post('/login', async (req, res) => {
 router.get('/google', (req, res) => {
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
-    redirect_uri: `${getAppUrl(req)}/auth/google/callback`,
+    redirect_uri: getOAuthCallbackUrl(req, 'google'),
     response_type: 'code',
     scope: 'openid email profile',
     prompt: 'select_account',
@@ -170,7 +197,7 @@ router.get('/google', (req, res) => {
 
 router.get('/google/callback', async (req, res) => {
   try {
-    const redirectUri = `${getAppUrl(req)}/auth/google/callback`
+    const redirectUri = getOAuthCallbackUrl(req, 'google')
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -215,7 +242,7 @@ router.get('/google/callback', async (req, res) => {
 router.get('/github', (req, res) => {
   const params = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID,
-    redirect_uri: `${getAppUrl(req)}/auth/github/callback`,
+    redirect_uri: getOAuthCallbackUrl(req, 'github'),
     scope: 'read:user user:email',
     state: getSafeNextPath(req.query.next),
   })
@@ -225,6 +252,7 @@ router.get('/github', (req, res) => {
 
 router.get('/github/callback', async (req, res) => {
   try {
+    const redirectUri = getOAuthCallbackUrl(req, 'github')
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -232,7 +260,7 @@ router.get('/github/callback', async (req, res) => {
         client_id: process.env.GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
         code: req.query.code,
-        redirect_uri: `${getAppUrl(req)}/auth/github/callback`,
+        redirect_uri: redirectUri,
       }),
     })
     const tokenData = await tokenResponse.json()
