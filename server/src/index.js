@@ -42,6 +42,10 @@ const configuredOrigins = [
   ...normalizeOrigins(process.env.CORS_ORIGIN),
 ]
 
+const deployedOrigins = [
+  'https://jobpilot-livid-omega.vercel.app',
+]
+
 const localOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -52,6 +56,7 @@ const localOrigins = [
 
 const allowedOrigins = new Set([
   ...configuredOrigins,
+  ...deployedOrigins,
   ...(isProduction ? [] : localOrigins),
 ])
 
@@ -64,8 +69,7 @@ if (missingProductionEnv.length > 0) {
   throw new Error(`Missing required production environment variables: ${missingProductionEnv.join(', ')}`)
 }
 
-// Middleware
-app.use(cors({
+const corsOptions = {
   origin(origin, callback) {
     if (!origin) return callback(null, true)
 
@@ -77,7 +81,11 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
-}))
+}
+
+// Middleware
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), razorpayWebhook)
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
