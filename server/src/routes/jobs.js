@@ -155,12 +155,14 @@ router.get('/', authenticateOptional, async (req, res) => {
 
     res.json(buildSuccessResponse(filteredJobs, { jobs: filteredJobs }))
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to fetch jobs', { error: err.message }))
   }
 })
 
 router.get('/matches', authenticateToken, async (req, res) => {
   try {
+    const filters = normalizeJobFilters(req.query)
     const [resume, user] = await Promise.all([
       Resume.findOne({ userId: req.user.userId }).sort({ updatedAt: -1 }),
       User.findById(req.user.userId),
@@ -229,6 +231,7 @@ router.get('/matches', authenticateToken, async (req, res) => {
       )
     )
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to fetch job matches', { error: err.message }))
   }
 })
@@ -249,6 +252,7 @@ router.post('/', authenticateToken, async (req, res) => {
       })
     )
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to create job', { error: err.message }))
   }
 })
@@ -260,6 +264,7 @@ router.get('/import/remoteok', authenticateToken, async (req, res) => {
 
     res.json(result)
   } catch (err) {
+    console.error(err)
     res.status(200).json({
       success: true,
       imported: 0,
@@ -275,6 +280,7 @@ router.get('/import/himalayas', authenticateToken, async (req, res) => {
 
     res.json(result)
   } catch (err) {
+    console.error(err)
     res.status(200).json({
       success: true,
       imported: 0,
@@ -291,6 +297,7 @@ router.get('/import/arbeitnow', authenticateToken, async (req, res) => {
 
     res.json(result)
   } catch (err) {
+    console.error(err)
     res.status(200).json({
       success: true,
       imported: 0,
@@ -314,6 +321,7 @@ router.get('/import/all', authenticateToken, async (req, res) => {
     try {
       results[source] = await importer({ limit })
     } catch (err) {
+      console.error(err)
       console.error(`${source} import failed:`, err.message)
       results[source] = {
         success: true,
@@ -356,6 +364,7 @@ router.get('/import/remotive', authenticateToken, async (req, res) => {
 
     res.json(result)
   } catch (err) {
+    console.error(err)
     res.status(200).json({
       success: true,
       imported: 0,
@@ -417,6 +426,7 @@ router.post('/:id/apply', authenticateToken, async (req, res) => {
     await application.save()
     res.status(201).json(buildSuccessResponse(application, { application }))
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to apply for job', { error: err.message }))
   }
 })
@@ -429,6 +439,7 @@ router.get('/user/applications', authenticateToken, async (req, res) => {
 
     res.json(buildSuccessResponse(applications, { applications }))
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to fetch applications', { error: err.message }))
   }
 })
@@ -463,6 +474,7 @@ router.patch('/applications/:id', authenticateToken, async (req, res) => {
     if (!application) return res.status(404).json(buildErrorResponse('Application not found'))
     res.json(buildSuccessResponse(application, { application }))
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to update application', { error: err.message }))
   }
 })
@@ -475,6 +487,7 @@ router.get('/saved/list', authenticateToken, async (req, res) => {
     const saved = (user.jobMatches || []).map((item) => String(item.jobId))
     res.json({ success: true, saved })
   } catch (err) {
+    console.error(err)
     res.status(500).json({ success: false, message: 'Failed to fetch saved jobs', error: err.message })
   }
 })
@@ -495,6 +508,7 @@ router.post('/:id/save', authenticateToken, async (req, res) => {
     }
     res.json({ success: true, saved: true })
   } catch (err) {
+    console.error(err)
     res.status(500).json({ success: false, message: 'Failed to save job', error: err.message })
   }
 })
@@ -514,6 +528,7 @@ router.patch('/:id/save', authenticateToken, async (req, res) => {
     await user.save()
     res.json({ success: true, savedJob })
   } catch (err) {
+    console.error(err)
     res.status(500).json({ success: false, message: 'Failed to update saved job', error: err.message })
   }
 })
@@ -526,6 +541,7 @@ router.delete('/:id/save', authenticateToken, async (req, res) => {
     await user.save()
     res.json({ success: true, removed: true })
   } catch (err) {
+    console.error(err)
     res.status(500).json({ success: false, message: 'Failed to remove saved job', error: err.message })
   }
 })
@@ -549,6 +565,7 @@ router.get('/:id', authenticateOptional, async (req, res) => {
     const serializedJob = serializeJob(job, matchData)
     res.json(buildSuccessResponse({ job: serializedJob, matchData }, { job: serializedJob, matchData }))
   } catch (err) {
+    console.error(err)
     res.status(500).json(buildErrorResponse('Failed to fetch job', { error: err.message }))
   }
 })

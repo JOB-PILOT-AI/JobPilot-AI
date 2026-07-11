@@ -286,10 +286,7 @@ const buildRadarOption = (dimensions, rows, candidateName, targetName) => {
       shape: 'circle',
       indicator: indicators,
       splitNumber: 5,
-      name: {
-        color: '#9ca3af',
-        fontSize: 12,
-      },
+      name: 'Skill DNA',
       axisName: {
         color: '#cbd5e1',
         fontSize: 12,

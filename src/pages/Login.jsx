@@ -77,9 +77,7 @@ export default function Login() {
   }
 
   const startOAuth = (provider) => {
-    const envApi = import.meta.env.VITE_API_URL || ''
-    const defaultLocal = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:5002' : ''
-    const base = envApi || defaultLocal || ''
+    const base = import.meta.env.VITE_API_URL || ''
     const nextQuery = `?next=${encodeURIComponent(nextPath)}`
     const target = base ? `${base}/api/auth/${provider}${nextQuery}` : `/api/auth/${provider}${nextQuery}`
     window.location.href = target

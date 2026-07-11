@@ -1,15 +1,11 @@
 export default function SocialButtons() {
   const handleGoogleLogin = () => {
-    const envApi = import.meta.env.VITE_API_URL || ''
-    const defaultLocal = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:5002' : ''
-    const base = envApi || defaultLocal || ''
+    const base = import.meta.env.VITE_API_URL || ''
     window.location.href = base ? `${base}/api/auth/google` : '/api/auth/google'
   }
 
   const handleGithubLogin = () => {
-    const envApi2 = import.meta.env.VITE_API_URL || ''
-    const defaultLocal2 = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:5002' : ''
-    const base2 = envApi2 || defaultLocal2 || ''
+    const base2 = import.meta.env.VITE_API_URL || ''
     window.location.href = base2 ? `${base2}/api/auth/github` : '/api/auth/github'
   }
 

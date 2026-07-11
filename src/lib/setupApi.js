@@ -2,12 +2,9 @@ import axios from 'axios'
 
 const DEFAULT_TIMEOUT = 30000
 
-// Respect Vite env when pointing at a remote API during development
-// If `VITE_API_URL` is not set and we're running locally, default to the
-// backend server used by `server/src/index.js` during development.
-const envApiUrl = import.meta.env.VITE_API_URL || ''
-const defaultLocalApi = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) ? 'http://localhost:3001' : ''
-const apiUrl = envApiUrl || defaultLocalApi
+// Use the configured API origin when present; otherwise fall back to the
+// local Vite proxy so development traffic stays on a single source of truth.
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
 
 axios.defaults.timeout = DEFAULT_TIMEOUT
 if (apiUrl) {
