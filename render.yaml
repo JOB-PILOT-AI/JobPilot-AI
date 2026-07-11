@@ -1,11 +1,16 @@
 services:
   - type: web
     name: jobpilot-backend
-    root: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NODE_PATH
-        value: ./node_modules
+      - key: CLIENT_URL
+        value: https://jobpilot-livid-omega.vercel.app
+      - key: FRONTEND_URL
+        value: https://jobpilot-livid-omega.vercel.app
+      - key: VITE_CLIENT_URL
+        value: https://jobpilot-livid-omega.vercel.app
+      - key: CORS_ORIGIN
+        value: https://jobpilot-livid-omega.vercel.app

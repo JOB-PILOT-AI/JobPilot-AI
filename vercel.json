@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://jobpilot-ai-92r6.onrender.com/api/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://jobpilot-ai-92r6.onrender.com/health"
+    }
+  ]
+}
