@@ -8,10 +8,10 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Load environment variables
+/
 const serverEnvPath = path.resolve(__dirname, '../.env')
 dotenv.config({ path: serverEnvPath })
-// Fallback to project root .env if server/.env is missing
+
 dotenv.config()
 
 // Import routes
@@ -21,7 +21,7 @@ import jobRoutes from './routes/jobs.js'
 import caddieRoutes from './routes/caddie.js'
 import careerRoutes from './routes/career.js'
 import paymentRoutes, { razorpayWebhook } from './routes/payments.js'
-import { seedJobs } from './utils/seeder.js'
+
 
 const app = express()
 const PORT = process.env.PORT || 5000
