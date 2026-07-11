@@ -1,16 +1,19 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://jobpilot-ai-92r6.onrender.com/api/:path*"
+      "src": "/api/(.*)",
+      "dest": "https://jobpilot-ai-92r6.onrender.com/api/$1"
     },
     {
-      "source": "/health",
-      "destination": "https://jobpilot-ai-92r6.onrender.com/health"
+      "src": "/health",
+      "dest": "https://jobpilot-ai-92r6.onrender.com/health"
     },
     {
-      "source": "/:path*",
-      "destination": "/"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
     }
   ]
 }
