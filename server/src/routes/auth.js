@@ -8,11 +8,12 @@ import CareerAsset from '../models/CareerAsset.js'
 import { authenticateToken } from '../middleware/auth.js'
 
 const router = express.Router()
+const getJwtSecret = () => process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'your-secret-key')
 
 const createToken = (user) =>
   jwt.sign(
     { userId: user._id, email: user.email },
-    process.env.JWT_SECRET || 'your-secret-key',
+    getJwtSecret(),
     { expiresIn: '7d' }
   )
 

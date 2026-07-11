@@ -3,6 +3,7 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -25,17 +26,67 @@ import paymentRoutes, { razorpayWebhook } from './routes/payments.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
+const isProduction = process.env.NODE_ENV === 'production'
+const distPath = path.resolve(__dirname, '../../dist')
+
+const normalizeOrigins = (value = '') =>
+  String(value)
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean)
+
+const configuredOrigins = [
+  ...normalizeOrigins(process.env.CLIENT_URL),
+  ...normalizeOrigins(process.env.FRONTEND_URL),
+  ...normalizeOrigins(process.env.VITE_CLIENT_URL),
+  ...normalizeOrigins(process.env.CORS_ORIGIN),
+]
+
+const localOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5000',
+  'http://localhost:5173',
+  'http://localhost:5174',
+]
+
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  ...(isProduction ? [] : localOrigins),
+])
+
+const requiredProductionEnv = ['MONGODB_URI', 'JWT_SECRET']
+const missingProductionEnv = isProduction
+  ? requiredProductionEnv.filter((name) => !process.env[name])
+  : []
+
+if (missingProductionEnv.length > 0) {
+  throw new Error(`Missing required production environment variables: ${missingProductionEnv.join(', ')}`)
+}
 
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true)
+
+    const normalizedOrigin = origin.replace(/\/$/, '')
+    if (allowedOrigins.has(normalizedOrigin)) {
+      return callback(null, true)
+    }
+
+    return callback(new Error('Not allowed by CORS'))
+  },
+  credentials: true,
+}))
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), razorpayWebhook)
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
 // Database connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jobpilot'
+const MONGODB_URI = process.env.MONGODB_URI || (isProduction ? undefined : 'mongodb://localhost:27017/jobpilot')
+const safeMongoLogTarget = MONGODB_URI?.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@')
 
-console.log('Attempting to connect to MongoDB at:', MONGODB_URI)
+console.log('Attempting to connect to MongoDB at:', safeMongoLogTarget)
 
 mongoose
   .connect(MONGODB_URI)
@@ -60,6 +111,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'Server is running' })
 })
 
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath))
+  app.get(/^\/(?!api(?:\/|$)).*/, (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'))
+  })
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack)
@@ -70,5 +128,5 @@ app.use((err, req, res, next) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`JobPilot.AI server running on http://localhost:${PORT}`)
+  console.log(`JobPilot.AI server running on port ${PORT}`)
 })
