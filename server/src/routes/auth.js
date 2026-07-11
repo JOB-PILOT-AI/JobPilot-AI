@@ -16,11 +16,21 @@ const createToken = (user) =>
     { expiresIn: '7d' }
   )
 
+const computeIsPro = (user) => {
+  const isVerifiedSubscription = ['authenticated', 'active'].includes(user?.subscription?.status)
+  const isTrialActive =
+    user?.subscription?.status === 'trial' &&
+    user?.subscription?.currentEnd &&
+    new Date(user.subscription.currentEnd) > new Date()
+
+  return Boolean(user?.isPro || isVerifiedSubscription || isTrialActive)
+}
+
 const publicUser = (user) => ({
   id: user._id,
   name: user.name,
   email: user.email,
-  isPro: Boolean(user.isPro),
+  isPro: computeIsPro(user),
   subscription: user.subscription || null,
   location: user.location || '',
   currentRole: user.currentRole || '',
@@ -330,7 +340,18 @@ router.get('/me', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' })
     }
-    res.json(user)
+
+    const trialExpired =
+      user.subscription?.status === 'trial' &&
+      user.subscription?.currentEnd &&
+      new Date(user.subscription.currentEnd) <= new Date()
+
+    if (trialExpired && user.isPro) {
+      user.isPro = false
+      await user.save()
+    }
+
+    res.json(publicUser(user))
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch user', error: err.message })
   }

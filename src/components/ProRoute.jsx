@@ -11,7 +11,17 @@ export default function ProRoute() {
     ? 'Mock Interview'
     : location.pathname.includes('practice-test')
       ? 'Practice Test'
-      : 'Exam Prep'
+      : location.pathname.includes('interview-prep')
+        ? 'Interview Prep'
+        : location.pathname.includes('branding-toolkit')
+          ? 'Branding Toolkit'
+          : location.pathname.includes('interview-scheduling')
+            ? 'Interview Scheduling'
+            : location.pathname.includes('recruiter-access')
+              ? 'Recruiter Access'
+              : location.pathname.includes('salary-guidance')
+                ? 'Salary Guidance'
+                : 'Pro feature'
 
   if (!isHydrated) {
     return null

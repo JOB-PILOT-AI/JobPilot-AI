@@ -259,4 +259,3 @@ MIT
 
 ## Support
 
-For issues and questions, please open an issue in the repository.

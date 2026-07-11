@@ -6,14 +6,14 @@ import { authenticateOptional } from '../middleware/auth.js'
 
 const router = express.Router()
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
-const DEFAULT_MODEL = 'gemini-1.5-flash-latest'
+const DEFAULT_MODEL = 'gemini-2.5-flash'
+const DISABLE_GEMINI = process.env.DISABLE_GEMINI === 'true'
 const RETIRED_MODELS = new Set([
   'gemini-pro',
   'gemini-pro-latest',
   'gemini-1.0-pro',
   'gemini-1.5-pro',
   'gemini-1.5-flash',
-  'gemini-2.5-flash',
 ])
 
 const normalizeModelName = (model) =>
@@ -54,6 +54,9 @@ const buildLocalAnswer = (message) => {
 router.get('/models', async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY
+    if (DISABLE_GEMINI) {
+      return res.json({ error: 'Gemini disabled', setupRequired: true })
+    }
     if (!apiKey) {
       return res.json({ 
         error: 'No GEMINI_API_KEY configured',
@@ -84,7 +87,7 @@ router.post('/chat', authenticateOptional, async (req, res) => {
     }
 
     const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
+    if (DISABLE_GEMINI || !apiKey) {
       return res.json({
         answer: buildLocalAnswer(userMessage),
         setupRequired: true,
@@ -162,13 +165,48 @@ router.post('/chat', authenticateOptional, async (req, res) => {
     let data = await response.json()
 
     // A stale CADDIE_MODEL should not break chat after Google retires a model.
-    if (response.status === 404 && model !== DEFAULT_MODEL) {
-      model = DEFAULT_MODEL
-      response = await callGemini(apiKey, model, requestBody)
-      data = await response.json()
+    if (response.status === 404) {
+      if (model !== DEFAULT_MODEL) {
+        model = DEFAULT_MODEL
+        response = await callGemini(apiKey, model, requestBody)
+        data = await response.json()
+      }
+
+      // If the DEFAULT_MODEL also fails, attempt to list available models
+      // and retry with the first non-retired model we find.
+      if (!response.ok) {
+        try {
+          const listResp = await fetch(
+            `${GEMINI_API_BASE}/models?pageSize=1000&key=${encodeURIComponent(apiKey)}`,
+            { method: 'GET' }
+          )
+
+          if (listResp.ok) {
+            const listData = await listResp.json()
+            const candidates = (listData.models || listData || [])
+              .map((m) => (typeof m === 'string' ? m : m.name || ''))
+              .map((n) => String(n).replace(/^models\//, ''))
+              .filter(Boolean)
+
+            const pick = candidates.find((m) => !RETIRED_MODELS.has(m))
+            if (pick) {
+              model = pick
+              response = await callGemini(apiKey, model, requestBody)
+              data = await response.json()
+            }
+          }
+        } catch (err) {
+          console.error('Error listing models during fallback:', err)
+        }
+      }
     }
 
     if (!response.ok) {
+      const quotaMsg = data?.error?.message || ''
+      if (response.status === 429 || response.status === 403 || /quota exceeded/i.test(quotaMsg)) {
+        return res.status(503).json({ message: 'Gemini quota exceeded or not available. Enable billing or use a supported model.' })
+      }
+
       return res.status(response.status).json({
         message: data?.error?.message || 'Caddie could not answer right now.',
         error: data?.error,

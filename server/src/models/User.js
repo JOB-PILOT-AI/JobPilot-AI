@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     subscription: {
-      provider: { type: String, enum: ['razorpay'], default: undefined },
+      provider: { type: String, enum: ['razorpay', 'trial'], default: undefined },
       subscriptionId: String,
       planId: String,
       status: { type: String, default: 'inactive' },

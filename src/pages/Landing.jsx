@@ -21,6 +21,10 @@ import {
   MessageSquare,
   ShieldCheck,
   Sparkles,
+  CalendarDays,
+  Users,
+  TrendingUp,
+  UserCheck,
 } from 'lucide-react'
 
 const featureCards = [
@@ -59,6 +63,30 @@ const featureCards = [
     title: 'Resume Builder',
     copy: 'Create, upload, improve, and preview an ATS-ready resume that connects directly to your job applications.',
     path: '/resume-builder',
+  },
+  {
+    icon: UserCheck,
+    title: 'Branding Toolkit',
+    copy: 'Generate a polished resume headline, LinkedIn summary, and professional pitch quickly.',
+    path: '/branding-toolkit',
+  },
+  {
+    icon: CalendarDays,
+    title: 'Interview Scheduling',
+    copy: 'Schedule interviews around your availability and stay on top of upcoming preparation tasks.',
+    path: '/interview-scheduling',
+  },
+  {
+    icon: Users,
+    title: 'Recruiter Access',
+    copy: 'Request referrals and get matched with recruiters who can help accelerate your hiring process.',
+    path: '/recruiter-access',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Salary Guidance',
+    copy: 'See market compensation ranges for your role and get negotiation talking points.',
+    path: '/salary-guidance',
   },
   {
     icon: Briefcase,

@@ -141,7 +141,10 @@ export default function Dashboard() {
                 <div className="h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_0_8px_rgba(73,215,202,0.08)]" />
                 Live Intelligence Active
               </div>
-              <h1 className="mt-6 text-5xl font-bold tracking-tight text-white">Good Evening, {user?.name || 'Alex'}.</h1>
+              <h1 className="mt-6 text-5xl font-bold tracking-tight text-white">
+                Welcome,&nbsp;
+                <span className="text-amber-400">{user?.name || 'Sonu Yadav'}</span>
+              </h1>
               <p className="mt-4 max-w-4xl text-xl leading-8 text-secondary">
                 Your career intelligence is synced. We&apos;ve identified {matches.length + 2} new high-compatibility matches in the London fintech sector since your last login.
               </p>

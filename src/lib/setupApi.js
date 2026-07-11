@@ -19,10 +19,12 @@ axios.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err?.response?.status
-    if (status === 401) {
+    if (status === 401 || status === 403) {
       try {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('user')
       } catch (e) {
         // ignore
       }

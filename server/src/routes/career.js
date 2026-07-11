@@ -7,7 +7,8 @@ import { authenticateToken } from '../middleware/auth.js'
 
 const router = express.Router()
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
-const MODEL = 'gemini-1.5-flash-latest'
+const MODEL = process.env.CAREER_MODEL || 'gemini-2.5-flash'
+const DISABLE_GEMINI = process.env.DISABLE_GEMINI === 'true'
 const assetTypes = new Set([
   'tailored-resume',
   'cover-letter',
@@ -77,7 +78,13 @@ const generate = async (prompt) => {
     }
   )
   const data = await response.json()
-  if (!response.ok) throw new Error(data?.error?.message || 'AI generation failed')
+  if (!response.ok) {
+    const msg = data?.error?.message || 'AI generation failed'
+    if (response.status === 429 || response.status === 403 || /quota exceeded/i.test(msg)) {
+      throw new Error('Gemini quota exceeded or model unavailable: ' + msg)
+    }
+    throw new Error(msg)
+  }
   return (data.candidates?.[0]?.content?.parts || []).map((part) => part.text || '').join('').trim()
 }
 
@@ -157,6 +164,10 @@ router.post('/generate', authenticateToken, async (req, res) => {
       answer: clean(req.body.answer, 6000),
       resume,
     }
+    if (DISABLE_GEMINI || !process.env.GEMINI_API_KEY) {
+      return res.status(503).json({ message: 'AI generation is disabled or no GEMINI_API_KEY is configured.' })
+    }
+
     const content = await generate(promptFor(input))
     const title = `${type.replaceAll('-', ' ')}${input.role ? ` · ${input.role}` : ''}`
     const asset = await CareerAsset.create({
@@ -173,6 +184,9 @@ router.post('/generate', authenticateToken, async (req, res) => {
     })
     res.status(201).json({ asset })
   } catch (error) {
+    if (/quota exceeded|model unavailable|Gemini quota/i.test(error.message)) {
+      return res.status(503).json({ message: error.message })
+    }
     res.status(500).json({ message: error.message || 'Generation failed' })
   }
 })

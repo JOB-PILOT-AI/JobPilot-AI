@@ -22,6 +22,10 @@ import CareerAutopilot from './pages/CareerAutopilot'
 import AutoApplyKit from './pages/AutoApplyKit'
 import PortfolioBuilder from './pages/PortfolioBuilder'
 import Applications from './pages/Applications'
+import BrandingToolkit from './pages/BrandingToolkit'
+import InterviewScheduling from './pages/InterviewScheduling'
+import RecruiterAccess from './pages/RecruiterAccess'
+import SalaryGuidance from './pages/SalaryGuidance'
 import DashboardLayout from './components/DashboardLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import ProRoute from './components/ProRoute'
@@ -58,6 +62,10 @@ function App() {
             <Route path="/portfolio-builder" element={<PortfolioBuilder />} />
             <Route path="/applications" element={<Applications />} />
             <Route element={<ProRoute />}>
+              <Route path="/branding-toolkit" element={<BrandingToolkit />} />
+              <Route path="/interview-scheduling" element={<InterviewScheduling />} />
+              <Route path="/recruiter-access" element={<RecruiterAccess />} />
+              <Route path="/salary-guidance" element={<SalaryGuidance />} />
               <Route path="/interview-prep" element={<InterviewPrep />} />
               <Route path="/mock-interview" element={<MockInterview />} />
               <Route path="/practice-test" element={<PracticeTest />} />

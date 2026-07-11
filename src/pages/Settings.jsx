@@ -6,6 +6,7 @@ import Input from '../components/ui/Input'
 import { Save, Lock, Bell, Shield, Download, Trash2 } from 'lucide-react'
 import ErrorBoundary from '../components/ErrorBoundary'
 import SocialButtons from '../components/SocialButtons'
+import ProBadge from '../components/ProBadge'
 import { useAuthStore } from '../store/authStore'
 
 export default function Settings() {
@@ -162,7 +163,10 @@ export default function Settings() {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Shield size={20} className="text-white" />
             </div>
-            <CardTitle>Profile Information</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Profile Information</CardTitle>
+              <ProBadge compact />
+            </div>
           </div>
 
           <div className="space-y-4">

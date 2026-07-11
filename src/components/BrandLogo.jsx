@@ -7,22 +7,19 @@ export default function BrandLogo({ size = 'md', showText = true, subtitle, clas
   return (
     <div className={`flex min-w-0 items-center gap-3 ${className}`}>
       <div
-        className={`${markSize} relative shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[#020817] shadow-[0_14px_36px_rgba(0,0,0,0.28)]`}
+        className={`${markSize} relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#020817] shadow-[0_14px_36px_rgba(0,0,0,0.28)]`}
         aria-hidden="true"
       >
-        <img src="/jobpilot-logo-mark.svg" alt="" className="h-full w-full object-cover" />
+        <img src="/jobpilot-logo-mark.svg" alt="JobPilot logo mark" className="h-full w-full object-cover" />
       </div>
       {showText && (
         <div className="min-w-0">
-          <div className={`flex min-w-0 items-center gap-1.5 ${titleSize} font-black leading-none tracking-tight`}>
+          <div className={`flex items-baseline gap-1.5 ${titleSize} font-black leading-none tracking-tight`}>
             <span className="truncate text-white">Job</span>
             <span className="truncate text-primary">Pilot</span>
-            <span className={`${badgeSize} rounded bg-[#273b83] font-black leading-none text-white shadow-sm shadow-[#273b83]/30`}>
-              AI
-            </span>
           </div>
           {subtitle && (
-            <div className="mt-1 truncate text-[10px] uppercase tracking-[0.16em] text-secondary">{subtitle}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-secondary">{subtitle}</div>
           )}
         </div>
       )}

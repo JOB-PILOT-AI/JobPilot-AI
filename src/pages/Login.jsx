@@ -5,6 +5,16 @@ import { useAuthStore } from '../store/authStore'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '../components/ui/dialog'
+
 const GoogleLogo = () => (
   <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -77,30 +87,31 @@ export default function Login() {
 
   return (
     <div className="min-h-screen page-shell text-foreground">
+      
       <div className="mx-auto flex min-h-screen max-w-[1440px] flex-col lg:flex-row">
         <aside className="relative hidden w-full max-w-[48%] flex-col justify-between overflow-hidden border-r border-white/10 bg-[#07090c] px-10 py-12 lg:flex">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(182,79,82,0.16),transparent_28rem),radial-gradient(circle_at_bottom_right,rgba(73,215,202,0.08),transparent_24rem)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_24rem),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.12),transparent_28rem)]" />
           <div className="relative z-10">
             <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-primary">
-              SYSTEM ACTIVE
+              JobPilot Professional
             </div>
-            <h1 className="text-5xl font-semibold tracking-tight text-white">Precision tools for career growth</h1>
+            <h1 className="text-5xl font-semibold tracking-tight text-white">AI career intelligence for ambitious professionals.</h1>
             <p className="mt-6 max-w-xl text-sm leading-7 text-secondary">
-              Intelligent job matching and engineering-focused workflows designed for the modern professional.
+              Discover roles matched to your skills, build better resumes, and manage every application from one secure workspace.
             </p>
           </div>
 
           <div className="relative z-10 grid gap-5 rounded-[2rem] border border-white/10 bg-[#0e1117]/95 p-8 shadow-[0_32px_90px_rgba(0,0,0,0.32)]">
-            <div className="text-xs uppercase tracking-[0.3em] text-secondary">Match strength</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-secondary">Latest performance</div>
             <div className="text-5xl font-semibold text-white">94%</div>
             <div className="grid gap-3 text-sm text-secondary">
               <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                <span>Engine Status</span>
-                <span className="text-accent">Active</span>
+                <span>Resume optimization</span>
+                <span className="text-emerald-400">Expert review</span>
               </div>
               <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                <span>Daily Analysis</span>
-                <span className="text-secondary">142 roles</span>
+                <span>Weekly job alerts</span>
+                <span className="text-secondary">+142 roles</span>
               </div>
             </div>
           </div>
@@ -109,13 +120,24 @@ export default function Login() {
         <main className="flex w-full flex-1 items-center justify-center px-6 py-12 sm:px-12 lg:px-16">
           <div className="w-full max-w-md">
             <div className="mb-10">
-              <p className="text-sm uppercase tracking-[0.28em] text-secondary">Welcome back</p>
-              <h2 className="mt-4 text-3xl font-semibold text-white">Access your career mission control.</h2>
+              <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Secure access</p>
+              <h2 className="mt-4 text-3xl font-semibold text-white">{isSignup ? 'Create your JobPilot account' : 'Sign in to JobPilot'}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                {isSignup ? 'Start your career journey with personalized job data, resume tools, and interview preparation.' : 'Sign in to continue tracking applications, building your profile, and getting matched to new roles.'}
+              </p>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-[#101418]/95 p-8 shadow-[0_32px_90px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-              <div className="mb-8">
-                <p className="text-sm text-secondary">Sign in with your email to continue.</p>
+            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#101418]/95 p-8 shadow-[0_32px_90px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+              <div className="mb-8 rounded-3xl bg-slate-950/80 p-4 text-sm text-slate-300 shadow-sm shadow-black/10">
+                <div className="flex items-center gap-4">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Sparkles className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-white">Professional sign-in experience</p>
+                    <p className="text-slate-400">Fast, modern authentication with secure email and OAuth access.</p>
+                  </div>
+                </div>
               </div>
 
               {error && (
@@ -230,20 +252,66 @@ export default function Login() {
                 </Button>
               </div>
 
-              <div className="mt-6 text-center text-sm text-slate-400">
-                {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
-                <button
-                  onClick={() => {
-                    setIsSignup(!isSignup)
-                    clearError()
-                    setResetMessage('')
-                  }}
-                  className="font-semibold text-white underline decoration-slate-700 decoration-2 underline-offset-4 hover:text-sky-300"
-                >
-                  {isSignup ? 'Sign in' : 'Sign up'}
-                </button>
+              <div className="mt-6 flex flex-col items-center gap-3 text-center text-sm text-slate-400 sm:flex-row sm:justify-between sm:text-left">
+                <div>
+                  {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+                  <button
+                    onClick={() => {
+                      setIsSignup(!isSignup)
+                      clearError()
+                      setResetMessage('')
+                    }}
+                    className="font-semibold text-white underline decoration-slate-700 decoration-2 underline-offset-4 hover:text-sky-300"
+                  >
+                    {isSignup ? 'Sign in' : 'Sign up'}
+                  </button>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-sky-500/10 hover:text-white"
+                    >
+                      Need help?
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Need help signing in?</DialogTitle>
+                      <DialogDescription>
+                        Our support team is happy to help with access, account setup, or any login issues.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-sm text-slate-200">
+                      <div>
+                        <p className="font-semibold text-white">Ankit Kumar Singh</p>
+                        <p>kumaranikant24@gmail.com</p>
+                        <p>+91 74399 07360</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">Rohit Singh</p>
+                        <p>rohitsingh24685@gmail.com</p>
+                        <p>+91 70445 03324</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">Nawraj Singh</p>
+                        <p>singhnawraj003@gmail.com</p>
+                        <p>+91 79806 08611</p>
+                      </div>
+                    </div>
+                    <DialogClose asChild>
+                      <button
+                        type="button"
+                        className="mt-6 inline-flex w-full justify-center rounded-2xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                      >
+                        Close
+                      </button>
+                    </DialogClose>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
+
           </div>
         </main>
       </div>

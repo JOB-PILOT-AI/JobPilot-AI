@@ -8,7 +8,8 @@ import { calculateATSScore } from '../services/atsScoring.js'
 
 const router = express.Router()
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
-const INTERVIEW_MODEL = process.env.INTERVIEW_MODEL || 'gemini-1.5-flash-latest'
+const INTERVIEW_MODEL = process.env.INTERVIEW_MODEL || 'gemini-2.5-flash'
+const DISABLE_GEMINI = process.env.DISABLE_GEMINI === 'true'
 const requirePro = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId).select('isPro')

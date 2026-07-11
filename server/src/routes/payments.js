@@ -6,6 +6,7 @@ import { authenticateToken } from '../middleware/auth.js'
 const router = express.Router()
 const API_BASE = 'https://api.razorpay.com/v1'
 const PRICE_PAISE = 49900
+const TRIAL_DAYS = Number(process.env.TRIAL_DAYS || 30)
 
 const configured = () =>
   Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET && process.env.RAZORPAY_PLAN_ID)
@@ -31,18 +32,74 @@ const razorpayRequest = async (path, options = {}) => {
   return data
 }
 
-router.get('/config', authenticateToken, (req, res) => {
-  res.json({
-    configured: configured(),
-    keyId: configured() ? process.env.RAZORPAY_KEY_ID : '',
-    plan: {
-      name: 'JobPilot Pro',
-      amount: PRICE_PAISE,
-      currency: 'INR',
-      interval: 'month',
-      displayPrice: '₹499',
-    },
-  })
+router.get('/config', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    const trialActive =
+      user?.subscription?.provider === 'trial' &&
+      user.subscription?.currentEnd &&
+      new Date(user.subscription.currentEnd) > new Date()
+
+    const trialUsed = user?.subscription?.provider === 'trial'
+    res.json({
+      configured: configured(),
+      keyId: configured() ? process.env.RAZORPAY_KEY_ID : '',
+      plan: {
+        name: 'JobPilot Pro',
+        amount: PRICE_PAISE,
+        currency: 'INR',
+        interval: 'month',
+        displayPrice: '₹499',
+      },
+      trial: {
+        days: TRIAL_DAYS,
+        active: Boolean(trialActive),
+        available: !trialUsed && !user?.isPro,
+        endsAt: trialActive ? user.subscription.currentEnd : null,
+      },
+    })
+  } catch (error) {
+    res.status(500).json({ message: 'Could not load payment config.' })
+  }
+})
+
+router.post('/trial', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+
+    const trialActive =
+      user.subscription?.provider === 'trial' &&
+      user.subscription?.currentEnd &&
+      new Date(user.subscription.currentEnd) > new Date()
+
+    if (trialActive) {
+      return res.status(409).json({ message: 'Your free trial is already active.' })
+    }
+
+    if (user.subscription?.provider === 'trial') {
+      return res.status(409).json({ message: 'You have already used your free trial.' })
+    }
+
+    const trialEnd = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+    user.isPro = true
+    user.subscription = {
+      provider: 'trial',
+      status: 'trial',
+      currentStart: new Date(),
+      currentEnd: trialEnd,
+      planId: undefined,
+      subscriptionId: undefined,
+    }
+    await user.save()
+
+    res.json({
+      trialDays: TRIAL_DAYS,
+      trialEndsAt: trialEnd.toISOString(),
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Could not start free trial.' })
+  }
 })
 
 router.post('/subscription', authenticateToken, async (req, res) => {

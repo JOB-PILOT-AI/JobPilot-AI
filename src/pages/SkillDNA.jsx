@@ -21,6 +21,7 @@ import { useAuthStore } from '../store/authStore'
 import { getApiErrorMessage, unwrapApiResponse } from '../lib/apiResponse'
 
 const ELECTRIC_CYAN = '#22D3EE'
+const SOFT_BLUE = '#64748B'
 const TARGET_COLOR = '#FBBF24'
 
 const DIMENSION_LIBRARY = [

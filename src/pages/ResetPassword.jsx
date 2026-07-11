@@ -3,6 +3,15 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { Card, CardTitle, CardContent } from '../components/ui/Card'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '../components/ui/dialog'
 import { useAuthStore } from '../store/authStore'
 
 export default function ResetPassword() {
@@ -156,24 +165,69 @@ export default function ResetPassword() {
                 </div>
               )}
 
-              <div className="mt-8 text-center text-sm text-slate-400">
-                {isResetMode ? (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/login')}
-                    className="font-semibold text-white underline decoration-slate-700 decoration-2 underline-offset-4 hover:text-sky-300"
-                  >
-                    Back to login
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/login')}
-                    className="font-semibold text-white underline decoration-slate-700 decoration-2 underline-offset-4 hover:text-sky-300"
-                  >
-                    Return to login
-                  </button>
-                )}
+              <div className="mt-8 flex flex-col items-center gap-3 text-center text-sm text-slate-400 sm:flex-row sm:justify-between sm:text-left">
+                <div>
+                  {isResetMode ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/login')}
+                      className="font-semibold text-white underline decoration-slate-700 decoration-2 underline-offset-4 hover:text-sky-300"
+                    >
+                      Back to login
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/login')}
+                      className="font-semibold text-white underline decoration-slate-700 decoration-2 underline-offset-4 hover:text-sky-300"
+                    >
+                      Return to login
+                    </button>
+                  )}
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-sky-500/10 hover:text-white"
+                    >
+                      Need help?
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Need help with account access?</DialogTitle>
+                      <DialogDescription>
+                        Contact one of our support specialists if you need help with password reset or login.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-sm text-slate-200">
+                      <div>
+                        <p className="font-semibold text-white">Ankit Kumar Singh</p>
+                        <p>kumaranikant24@gmail.com</p>
+                        <p>+91 74399 07360</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">Rohit Singh</p>
+                        <p>rohitsingh24685@gmail.com</p>
+                        <p>+91 70445 03324</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">Nawraj Singh</p>
+                        <p>singhnawraj003@gmail.com</p>
+                        <p>+91 79806 08611</p>
+                      </div>
+                    </div>
+                    <DialogClose asChild>
+                      <button
+                        type="button"
+                        className="mt-6 inline-flex w-full justify-center rounded-2xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                      >
+                        Close
+                      </button>
+                    </DialogClose>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </div>

@@ -5,11 +5,14 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// Load environment variables
-dotenv.config()
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+// Load environment variables
+const serverEnvPath = path.resolve(__dirname, '../.env')
+dotenv.config({ path: serverEnvPath })
+// Fallback to project root .env if server/.env is missing
+dotenv.config()
 
 // Import routes
 import authRoutes from './routes/auth.js'

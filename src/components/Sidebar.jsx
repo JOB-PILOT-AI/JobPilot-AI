@@ -15,10 +15,15 @@ import {
   Rocket,
   Send,
   Globe2,
+  CalendarDays,
+  Users,
+  TrendingUp,
+  UserCheck,
 } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { useState } from 'react'
 import BrandLogo from './BrandLogo'
+import ProBadge from './ProBadge'
 
 export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) {
   const location = useLocation()
@@ -32,6 +37,10 @@ export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) 
     { label: 'Dashboard', icon: BarChart3, path: '/dashboard' },
     { label: 'Career Autopilot', icon: Rocket, path: '/career-autopilot' },
     { label: 'Resume Builder', icon: FileText, path: '/resume-builder' },
+    { label: 'Branding Toolkit', icon: UserCheck, path: '/branding-toolkit' },
+    { label: 'Interview Scheduling', icon: CalendarDays, path: '/interview-scheduling' },
+    { label: 'Recruiter Access', icon: Users, path: '/recruiter-access' },
+    { label: 'Salary Guidance', icon: TrendingUp, path: '/salary-guidance' },
     { label: 'Auto Apply Kit', icon: Send, path: '/auto-apply-kit' },
     { label: 'Portfolio Builder', icon: Globe2, path: '/portfolio-builder' },
     { label: 'Career Studio', icon: WandSparkles, path: '/career-studio' },
@@ -115,7 +124,10 @@ export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) 
           )}
           {!isCollapsed && (
             <div className="rounded-2xl border border-white/10 bg-[#111418] px-4 py-3 text-xs text-secondary">
-              <div className="font-semibold text-white mb-1 truncate">{user?.name}</div>
+              <div className="mb-1 flex items-center gap-2">
+                <div className="truncate font-semibold text-white">{user?.name}</div>
+                <ProBadge compact className="shrink-0" />
+              </div>
               <div className="truncate">{user?.email}</div>
             </div>
           )}
