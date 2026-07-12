@@ -193,21 +193,29 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/google', (req, res) => {
+  const callbackUrl = getOAuthCallbackUrl(req, 'google')
+  console.log('[Google OAuth] Initiating OAuth flow with callback URL:', callbackUrl)
+  
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
-    redirect_uri: getOAuthCallbackUrl(req, 'google'),
+    redirect_uri: callbackUrl,
     response_type: 'code',
     scope: 'openid email profile',
     prompt: 'select_account',
     state: getSafeNextPath(req.query.next),
   })
 
-  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`)
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+  console.log('[Google OAuth] Redirecting to:', authUrl)
+  res.redirect(authUrl)
 })
 
 router.get('/google/callback', async (req, res) => {
   try {
+    console.log('[Google OAuth] Callback received with code:', req.query.code ? 'YES' : 'NO')
     const redirectUri = getOAuthCallbackUrl(req, 'google')
+    console.log('[Google OAuth] Using redirect URI:', redirectUri)
+    
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -220,12 +228,14 @@ router.get('/google/callback', async (req, res) => {
       }),
     })
     const tokenData = await tokenResponse.json()
-    if (!tokenResponse.ok) throw new Error(tokenData.error_description || 'Google auth failed')
+    console.log('[Google OAuth] Token response status:', tokenResponse.status)
+    if (!tokenResponse.ok) throw new Error(tokenData.error_description || `Google auth failed: ${tokenData.error}`)
 
     const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     })
     const profile = await profileResponse.json()
+    console.log('[Google OAuth] Profile retrieved:', profile.email)
     if (!profileResponse.ok || !profile.email) throw new Error('Unable to read Google profile')
 
     let user = await User.findOne({ email: profile.email.toLowerCase() })
@@ -237,32 +247,43 @@ router.get('/google/callback', async (req, res) => {
         googleId: profile.id,
         authProviders: ['google'],
       })
+      console.log('[Google OAuth] Creating new user:', profile.email)
     } else {
       user.googleId = profile.id
       user.authProviders = Array.from(new Set([...(user.authProviders || []), 'google']))
+      console.log('[Google OAuth] Updating existing user:', profile.email)
     }
     await user.save()
+    console.log('[Google OAuth] User saved successfully')
     redirectWithAuth(req, res, user)
   } catch (err) {
-    console.error('[Google OAuth Error]', err)
+    console.error('[Google OAuth Error]', err.message)
     res.redirect(`${getAppUrl(req)}/login?error=${encodeURIComponent(err.message)}`)
   }
 })
 
 router.get('/github', (req, res) => {
+  const callbackUrl = getOAuthCallbackUrl(req, 'github')
+  console.log('[GitHub OAuth] Initiating OAuth flow with callback URL:', callbackUrl)
+  
   const params = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID,
-    redirect_uri: getOAuthCallbackUrl(req, 'github'),
+    redirect_uri: callbackUrl,
     scope: 'read:user user:email',
     state: getSafeNextPath(req.query.next),
   })
 
-  res.redirect(`https://github.com/login/oauth/authorize?${params.toString()}`)
+  const authUrl = `https://github.com/login/oauth/authorize?${params.toString()}`
+  console.log('[GitHub OAuth] Redirecting to:', authUrl)
+  res.redirect(authUrl)
 })
 
 router.get('/github/callback', async (req, res) => {
   try {
+    console.log('[GitHub OAuth] Callback received with code:', req.query.code ? 'YES' : 'NO')
     const redirectUri = getOAuthCallbackUrl(req, 'github')
+    console.log('[GitHub OAuth] Using redirect URI:', redirectUri)
+    
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -274,7 +295,8 @@ router.get('/github/callback', async (req, res) => {
       }),
     })
     const tokenData = await tokenResponse.json()
-    if (!tokenResponse.ok || !tokenData.access_token) throw new Error(tokenData.error_description || 'GitHub auth failed')
+    console.log('[GitHub OAuth] Token response status:', tokenResponse.status)
+    if (!tokenResponse.ok || !tokenData.access_token) throw new Error(tokenData.error_description || `GitHub auth failed: ${tokenData.error}`)
 
     const [profileResponse, emailsResponse] = await Promise.all([
       fetch('https://api.github.com/user', {
@@ -292,6 +314,7 @@ router.get('/github/callback', async (req, res) => {
         emails.find((email) => email.primary)?.email ||
         emails[0]?.email
       : null
+    console.log('[GitHub OAuth] Profile retrieved:', primaryEmail)
     if (!profileResponse.ok || !primaryEmail) throw new Error('Unable to read GitHub email')
 
     let user = await User.findOne({ email: primaryEmail.toLowerCase() })
@@ -303,14 +326,17 @@ router.get('/github/callback', async (req, res) => {
         githubId: String(profile.id),
         authProviders: ['github'],
       })
+      console.log('[GitHub OAuth] Creating new user:', primaryEmail)
     } else {
       user.githubId = String(profile.id)
       user.authProviders = Array.from(new Set([...(user.authProviders || []), 'github']))
+      console.log('[GitHub OAuth] Updating existing user:', primaryEmail)
     }
     await user.save()
+    console.log('[GitHub OAuth] User saved successfully')
     redirectWithAuth(req, res, user)
   } catch (err) {
-    console.error('[GitHub OAuth Error]', err)
+    console.error('[GitHub OAuth Error]', err.message)
     res.redirect(`${getAppUrl(req)}/login?error=${encodeURIComponent(err.message)}`)
   }
 })

@@ -34,7 +34,12 @@ import CaddieAssistant from './components/CaddieAssistant'
 function OAuthCallbackRedirect({ provider }) {
   useEffect(() => {
     const query = window.location.search || ''
-    window.location.replace(`/api/auth/${provider}/callback${query}`)
+    const apiBase = import.meta.env.VITE_API_URL
+    // In production, use the full API URL; in development, use relative path for vite proxy
+    const callbackUrl = apiBase 
+      ? `${apiBase}/api/auth/${provider}/callback${query}`
+      : `/api/auth/${provider}/callback${query}`
+    window.location.replace(callbackUrl)
   }, [provider])
 
   return null
