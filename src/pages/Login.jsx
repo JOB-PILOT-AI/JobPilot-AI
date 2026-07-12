@@ -87,27 +87,27 @@ export default function Login() {
     <div className="min-h-screen page-shell text-foreground">
       
       <div className="mx-auto flex min-h-screen max-w-[1440px] flex-col lg:flex-row">
-        <aside className="relative hidden w-full max-w-[48%] flex-col justify-between overflow-hidden border-r border-white/10 bg-[#07090c] px-10 py-12 lg:flex">
+        <aside className="relative hidden w-full max-w-[48%] flex-col justify-between overflow-hidden border-r border-white/10 bg-[#07090c] px-8 py-12 lg:flex lg:px-10 lg:py-16">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_24rem),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.12),transparent_28rem)]" />
           <div className="relative z-10">
             <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-primary">
               JobPilot Professional
             </div>
-            <h1 className="text-5xl font-semibold tracking-tight text-white">AI career intelligence for ambitious professionals.</h1>
-            <p className="mt-6 max-w-xl text-sm leading-7 text-secondary">
+            <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">AI career intelligence for ambitious professionals.</h1>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-secondary lg:mt-6">
               Discover roles matched to your skills, build better resumes, and manage every application from one secure workspace.
             </p>
           </div>
 
-          <div className="relative z-10 grid gap-5 rounded-[2rem] border border-white/10 bg-[#0e1117]/95 p-8 shadow-[0_32px_90px_rgba(0,0,0,0.32)]">
+          <div className="relative z-10 grid gap-5 rounded-2xl border border-white/10 bg-[#0e1117]/95 p-6 shadow-[0_32px_90px_rgba(0,0,0,0.32)] lg:rounded-[2rem] lg:p-8">
             <div className="text-xs uppercase tracking-[0.3em] text-secondary">Latest performance</div>
-            <div className="text-5xl font-semibold text-white">94%</div>
-            <div className="grid gap-3 text-sm text-secondary">
-              <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
+            <div className="text-4xl font-semibold text-white lg:text-5xl">94%</div>
+            <div className="grid gap-2 text-sm text-secondary lg:gap-3">
+              <div className="flex items-center justify-between rounded-xl px-3 py-2 bg-white/5 lg:rounded-2xl lg:px-4 lg:py-3">
                 <span>Resume optimization</span>
                 <span className="text-emerald-400">Expert review</span>
               </div>
-              <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl px-3 py-2 bg-white/5 lg:rounded-2xl lg:px-4 lg:py-3">
                 <span>Weekly job alerts</span>
                 <span className="text-secondary">+142 roles</span>
               </div>
@@ -115,20 +115,20 @@ export default function Login() {
           </div>
         </aside>
 
-        <main className="flex w-full flex-1 items-center justify-center px-6 py-12 sm:px-12 lg:px-16">
+        <main className="flex w-full flex-1 items-center justify-center px-4 py-8 sm:px-6 md:px-8 lg:px-16 lg:py-12">
           <div className="w-full max-w-md">
-            <div className="mb-10">
-              <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Secure access</p>
-              <h2 className="mt-4 text-3xl font-semibold text-white">{isSignup ? 'Create your JobPilot account' : 'Sign in to JobPilot'}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
+            <div className="mb-8 md:mb-10">
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Secure access</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">{isSignup ? 'Create your JobPilot account' : 'Sign in to JobPilot'}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400 md:mt-3">
                 {isSignup ? 'Start your career journey with personalized job data, resume tools, and interview preparation.' : 'Sign in to continue tracking applications, building your profile, and getting matched to new roles.'}
               </p>
             </div>
 
-            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#101418]/95 p-8 shadow-[0_32px_90px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-              <div className="mb-8 rounded-3xl bg-slate-950/80 p-4 text-sm text-slate-300 shadow-sm shadow-black/10">
-                <div className="flex items-center gap-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#101418]/95 p-6 shadow-[0_32px_90px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7 md:rounded-2xl lg:rounded-[2rem] lg:p-8">
+              <div className="mb-6 rounded-2xl bg-slate-950/80 p-3 text-sm text-slate-300 shadow-sm shadow-black/10 md:mb-8 md:p-4">
+                <div className="flex gap-3 md:gap-4">
+                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary md:h-11 md:w-11 md:rounded-2xl">
                     <Sparkles className="h-5 w-5" />
                   </span>
                   <div>
@@ -139,44 +139,44 @@ export default function Login() {
               </div>
 
               {error && (
-                <div className="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-300 md:rounded-2xl md:px-4 md:py-3">
                   {error}
                 </div>
               )}
               {resetMessage && (
-                <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary">
+                <div className="mb-4 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-sm text-primary md:rounded-2xl md:px-4 md:py-3">
                   {resetMessage}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
                 {isSignup && (
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-300">Full name</label>
+                    <label className="mb-2 block text-xs font-medium text-slate-300 md:text-sm">Full name</label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Alex Stratton"
-                      className="h-12 border-white/10 bg-slate-950 focus:border-sky-500 focus:ring-sky-500/20"
+                      className="h-10 border-white/10 bg-slate-950 text-sm focus:border-sky-500 focus:ring-sky-500/20 md:h-12"
                       required
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Email address</label>
+                  <label className="mb-2 block text-xs font-medium text-slate-300 md:text-sm">Email address</label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="name@company.com"
-                    className="h-12 border-white/10 bg-slate-950 focus:border-sky-500 focus:ring-sky-500/20"
+                    className="h-10 border-white/10 bg-slate-950 text-sm focus:border-sky-500 focus:ring-sky-500/20 md:h-12"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Password</label>
+                  <label className="mb-2 block text-xs font-medium text-slate-300 md:text-sm">Password</label>
                   <div className="relative">
                     <Input
                       type={showPassword ? 'text' : 'password'}
@@ -184,20 +184,20 @@ export default function Login() {
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       placeholder="••••••••"
                       required
-                      className="h-12 border-white/10 bg-slate-950 pr-10 focus:border-sky-500 focus:ring-sky-500/20"
+                      className="h-10 border-white/10 bg-slate-950 pr-10 text-sm focus:border-sky-500 focus:ring-sky-500/20 md:h-12"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-200"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-200"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </div>
 
-                <div className="-mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-slate-300">
+                <div className="-mt-1 flex flex-col gap-2 sm:gap-3 md:flex-row md:items-center md:justify-between">
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-300 md:text-sm">
                     <input
                       type="checkbox"
                       checked={rememberMe}
@@ -210,7 +210,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-left text-sm font-medium text-sky-400 transition hover:text-sky-300 sm:text-right"
+                      className="text-left text-xs font-medium text-sky-400 transition hover:text-sky-300 md:text-sm md:text-right"
                     >
                       Forgot password?
                     </button>
@@ -220,38 +220,38 @@ export default function Login() {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="mt-2 h-12 w-full rounded-2xl text-base font-semibold shadow-lg shadow-sky-500/20 transition hover:shadow-sky-500/30"
+                  className="mt-2 h-10 w-full rounded-lg text-sm font-semibold shadow-lg shadow-sky-500/20 transition hover:shadow-sky-500/30 md:h-12 md:rounded-2xl md:text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Please wait...' : isSignup ? 'Sign Up' : 'Sign In'}
                 </Button>
               </form>
 
-              <div className="mt-6 text-center text-sm text-slate-500">OR CONTINUE WITH</div>
+              <div className="mt-5 text-center text-xs text-slate-500 md:mt-6">OR CONTINUE WITH</div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:mt-4 md:gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => startOAuth('google')}
-                  className="flex h-12 w-full items-center justify-center gap-3 border-white/10 bg-slate-950 text-slate-200 hover:bg-white/5"
+                  className="flex h-10 w-full items-center justify-center gap-2 border-white/10 bg-slate-950 text-sm text-slate-200 hover:bg-white/5 md:h-12 md:gap-3 md:text-base"
                 >
                   <GoogleLogo />
-                  Google
+                  <span className="hidden sm:inline">Google</span>
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => startOAuth('github')}
-                  className="flex h-12 w-full items-center justify-center gap-3 border-white/10 bg-slate-950 text-slate-200 hover:bg-white/5"
+                  className="flex h-10 w-full items-center justify-center gap-2 border-white/10 bg-slate-950 text-sm text-slate-200 hover:bg-white/5 md:h-12 md:gap-3 md:text-base"
                 >
                   <GitHubLogo />
-                  GitHub
+                  <span className="hidden sm:inline">GitHub</span>
                 </Button>
               </div>
 
-              <div className="mt-6 flex flex-col items-center gap-3 text-center text-sm text-slate-400 sm:flex-row sm:justify-between sm:text-left">
-                <div>
+              <div className="mt-4 flex flex-col gap-2 text-center text-xs text-slate-400 md:mt-6 md:flex-row md:justify-between md:text-sm">
+                <div className="md:text-left">
                   {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
                   <button
                     onClick={() => {
@@ -268,19 +268,19 @@ export default function Login() {
                   <DialogTrigger asChild>
                     <button
                       type="button"
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-sky-500/10 hover:text-white"
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-sky-400 hover:bg-sky-500/10 hover:text-white md:px-4 md:text-sm"
                     >
                       Need help?
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-md">
+                  <DialogContent className="max-w-sm">
                     <DialogHeader>
-                      <DialogTitle>Need help signing in?</DialogTitle>
-                      <DialogDescription>
+                      <DialogTitle className="text-lg md:text-xl">Need help signing in?</DialogTitle>
+                      <DialogDescription className="text-sm">
                         Our support team is happy to help with access, account setup, or any login issues.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-sm text-slate-200">
+                    <div className="grid gap-3 rounded-lg border border-white/10 bg-slate-950/90 p-3 text-xs text-slate-200 md:rounded-2xl md:gap-4 md:p-4 md:text-sm">
                       <div>
                         <p className="font-semibold text-white">Ankit Kumar Singh</p>
                         <p>kumaranikant24@gmail.com</p>
@@ -300,7 +300,7 @@ export default function Login() {
                     <DialogClose asChild>
                       <button
                         type="button"
-                        className="mt-6 inline-flex w-full justify-center rounded-2xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                        className="mt-4 inline-flex w-full justify-center rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 md:mt-6 md:rounded-2xl md:py-3"
                       >
                         Close
                       </button>
