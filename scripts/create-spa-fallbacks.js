@@ -8,6 +8,8 @@ const routes = [
   'login',
   'forgot-password',
   'reset-password',
+  'auth/google/callback',
+  'auth/github/callback',
   'logout',
   'dashboard',
   'jobs',

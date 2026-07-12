@@ -80,7 +80,14 @@ const getServerUrl = (req) => {
   return `http://localhost:${process.env.PORT || 3001}`
 }
 
-const getOAuthCallbackUrl = (req, provider) => `${getServerUrl(req)}/api/auth/${provider}/callback`
+const getOAuthCallbackUrl = (req, provider) => {
+  const providerOverride = process.env[`${provider.toUpperCase()}_CALLBACK_URL`]
+  if (providerOverride) return trimUrl(providerOverride)
+
+  const sharedCallbackBase = process.env.OAUTH_CALLBACK_BASE_URL
+  const callbackBase = sharedCallbackBase ? stripApiSuffix(sharedCallbackBase) : getServerUrl(req)
+  return `${callbackBase}/api/auth/${provider}/callback`
+}
 
 const getSafeNextPath = (value) => {
   if (!value || typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) {

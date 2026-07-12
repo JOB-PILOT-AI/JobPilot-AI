@@ -112,6 +112,7 @@ mongoose
 
 // API Routes (must be before static file serving)
 app.use('/api/auth', authRoutes) // Existing auth routes
+app.use('/auth', authRoutes) // OAuth providers may still call legacy callback URLs
 app.use('/api/resume', resumeRoutes) // Existing resume routes
 app.use('/api/jobs', jobRoutes) // Existing job routes
 app.use('/api/caddie', caddieRoutes)

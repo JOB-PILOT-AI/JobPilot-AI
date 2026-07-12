@@ -31,6 +31,15 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ProRoute from './components/ProRoute'
 import CaddieAssistant from './components/CaddieAssistant'
 
+function OAuthCallbackRedirect({ provider }) {
+  useEffect(() => {
+    const query = window.location.search || ''
+    window.location.replace(`/api/auth/${provider}/callback${query}`)
+  }, [provider])
+
+  return null
+}
+
 function App() {
   const { initializeAuth } = useAuthStore()
 
@@ -47,6 +56,8 @@ function App() {
         <Route path="/forgot-password" element={<ResetPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/auth/google/callback" element={<OAuthCallbackRedirect provider="google" />} />
+        <Route path="/auth/github/callback" element={<OAuthCallbackRedirect provider="github" />} />
 
         {/* PROTECTED ROUTES */}
         <Route element={<ProtectedRoute />}>
