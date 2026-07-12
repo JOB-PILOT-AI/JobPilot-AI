@@ -1,12 +1,16 @@
-export default function SocialButtons() {
+export default function SocialButtons({ next = '/dashboard' } = {}) {
   const handleGoogleLogin = () => {
     const base = import.meta.env.VITE_API_URL || ''
-    window.location.href = base ? `${base}/api/auth/google` : '/api/auth/google'
+    const nextQuery = `?next=${encodeURIComponent(next)}`
+    const target = base ? `${base}/api/auth/google${nextQuery}` : `/api/auth/google${nextQuery}`
+    window.location.href = target
   }
 
   const handleGithubLogin = () => {
-    const base2 = import.meta.env.VITE_API_URL || ''
-    window.location.href = base2 ? `${base2}/api/auth/github` : '/api/auth/github'
+    const base = import.meta.env.VITE_API_URL || ''
+    const nextQuery = `?next=${encodeURIComponent(next)}`
+    const target = base ? `${base}/api/auth/github${nextQuery}` : `/api/auth/github${nextQuery}`
+    window.location.href = target
   }
 
   return (
