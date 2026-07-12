@@ -14,6 +14,19 @@ export default defineConfig(({ mode }) => {
         '@': resolve(__dirname, 'src'),
       },
     },
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      minify: 'terser',
+      chunkSizeWarningLimit: 600,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor': ['react', 'react-dom', 'react-router-dom'],
+          },
+        },
+      },
+    },
     server: {
       port: 5174,
       proxy: {
