@@ -9,9 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run vite:build && npm run spa:fallbacks",
-    "vite:build": "vite build",
-    "spa:fallbacks": "node scripts/create-spa-fallbacks.js",
+    "build": "vite build",
     "preview": "vite preview",
     "start": "node server/src/index.js",
     "server": "node server/src/index.js",

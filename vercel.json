@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -13,8 +15,19 @@
       "destination": "https://jobpilot-ai-92r6.onrender.com/health"
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "cache-control",
+          "value": "max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
