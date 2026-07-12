@@ -61,7 +61,7 @@ export default function CaddieAssistant() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-[70]">
+    <div className="fixed bottom-4 right-4 z-[70] max-w-[calc(100vw-2rem)] sm:bottom-5 sm:right-5">
       {isOpen && (
         <section className="mb-4 flex h-[min(620px,calc(100vh-7rem))] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#080c12]/95 shadow-[0_28px_90px_rgba(0,0,0,0.42)] backdrop-blur-xl">
           <header className="flex items-center justify-between border-b border-white/10 bg-[#0d131c] px-4 py-3">
@@ -74,7 +74,7 @@ export default function CaddieAssistant() {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold text-white">Caddie</div>
-                <div className="truncate text-xs text-secondary">AI helper</div>
+                <div className="truncate text-xs text-secondary">Career helper</div>
               </div>
             </div>
             <button
@@ -167,7 +167,7 @@ export default function CaddieAssistant() {
         type="button"
         onClick={openAssistant}
         className="flex h-14 items-center gap-3 rounded-2xl border border-white/10 bg-[#0d131c] px-4 py-3 text-white shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-[#121a25]"
-        aria-label="Open Caddie AI helper"
+        aria-label="Open Caddie helper"
       >
         <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
           <Bot size={21} />

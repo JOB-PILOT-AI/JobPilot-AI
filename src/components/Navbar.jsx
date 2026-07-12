@@ -74,12 +74,12 @@ export default function Navbar({ variant = 'marketing' }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#07090c]/95 shadow-[0_8px_30px_rgba(0,0,0,0.16)] backdrop-blur-xl">
       <nav
-        className={`mx-auto flex h-[72px] items-center justify-between gap-6 ${
-          isAppNav ? 'w-full px-5 lg:px-7' : 'max-w-[1536px] px-5 sm:px-8 lg:px-10'
+        className={`mx-auto flex h-[72px] min-w-0 items-center justify-between gap-4 ${
+          isAppNav ? 'w-full px-4 sm:px-5 lg:px-7' : 'max-w-[1536px] px-4 sm:px-8 lg:px-10'
         }`}
         aria-label="Primary navigation"
       >
-        <Link to="/" className="shrink-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/60" aria-label="JobPilot home">
+        <Link to="/" className="min-w-0 shrink-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/60" aria-label="JobPilot home">
           <BrandLogo />
         </Link>
 
@@ -111,7 +111,7 @@ export default function Navbar({ variant = 'marketing' }) {
                   </button>
 
                   {activeMenu === 'search' && (
-                    <div className="absolute right-0 top-12 w-[360px] overflow-hidden rounded-2xl border border-white/10 bg-[#0d1015] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
+                    <div className="absolute right-0 top-12 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#0d1015] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
                       <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#080b0f] px-3">
                         <Search size={17} className="text-secondary" />
                         <input
@@ -131,9 +131,9 @@ export default function Navbar({ variant = 'marketing' }) {
                             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-white/[0.06]"
                           >
                             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.05] text-primary"><Icon size={17} /></span>
-                            <span>
+                            <span className="min-w-0">
                               <span className="block text-sm font-semibold text-white">{item.label}</span>
-                              <span className="block text-xs text-secondary">{item.description}</span>
+                              <span className="block truncate text-xs text-secondary">{item.description}</span>
                             </span>
                           </button>
                         ))}
@@ -205,7 +205,7 @@ export default function Navbar({ variant = 'marketing' }) {
       </nav>
 
       {isMobileOpen && (
-        <div className="border-t border-white/[0.08] bg-[#090c10] px-5 py-4 shadow-2xl lg:hidden">
+        <div className="border-t border-white/[0.08] bg-[#090c10] px-4 py-4 shadow-2xl lg:hidden">
           <div className="mx-auto max-w-[1536px] space-y-1">
             {primaryLinks.map((item) => (
               <NavLink

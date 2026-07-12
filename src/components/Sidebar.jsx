@@ -63,7 +63,7 @@ export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) 
     <div
       className={`border-r border-white/10 bg-[#101114] transition-all duration-300 ${
         isCollapsed ? 'w-20' : 'w-72'
-      } fixed bottom-0 left-0 top-[72px] z-40 flex flex-col overflow-hidden shadow-[8px_0_40px_rgba(0,0,0,0.35)]`}
+      } fixed bottom-0 left-0 top-[72px] z-40 hidden flex-col overflow-hidden shadow-[8px_0_40px_rgba(0,0,0,0.35)] lg:flex`}
     >
       <div className="shrink-0 px-4 py-4 flex items-center justify-between">
         {isCollapsed ? (
@@ -113,7 +113,7 @@ export default function Sidebar({ isCollapsed: controlledCollapsed, onToggle }) 
           {!isCollapsed && (
             <div className="rounded-2xl border border-white/10 bg-[#111418] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.16)]">
               <div className="mb-2 text-lg font-semibold text-white">Upgrade to Pro</div>
-              <p className="mb-4 text-sm leading-5 text-secondary">Unlock advanced ATS insights and premium matching algorithms.</p>
+              <p className="mb-4 text-sm leading-5 text-secondary">Unlock advanced resume insights and premium matching tools.</p>
               <button
                 onClick={() => navigate('/upgrade')}
                 className="w-full rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-dark"

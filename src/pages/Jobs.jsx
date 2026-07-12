@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { Bookmark, Briefcase, ChevronDown, Search, SlidersHorizontal, MapPin, RefreshCcw, Sparkles, Landmark } from 'lucide-react'
+import { Bookmark, Briefcase, ChevronDown, Search, SlidersHorizontal, MapPin, RefreshCcw, Landmark } from 'lucide-react'
 import { Card, CardContent, CardTitle } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -151,34 +151,34 @@ export default function Jobs() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen page-shell text-foreground px-6 py-10 lg:px-8">
+      <div className="min-h-screen page-shell text-foreground px-0 py-0 sm:px-2 sm:py-2 lg:px-0">
         <div className="mx-auto max-w-7xl space-y-8">
-          <Card className="bg-[#101317]/95 rounded-[2rem] border border-white/10 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.24)]">
+          <Card className="rounded-2xl border border-white/10 bg-[#101317]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.24)] sm:p-6 lg:rounded-[2rem] lg:p-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div className="mb-4 flex flex-wrap gap-3">
                   <span className="rounded-full border border-accent/30 bg-accent/10 px-4 py-1 text-sm font-semibold text-accent">Engineering</span>
                   <span className="rounded-full border border-white/10 bg-[#111418] px-4 py-1 text-sm font-semibold text-secondary">Remote / Hybrid</span>
                 </div>
-                <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-white">Precision Job Matches</h1>
+                <h1 className="max-w-4xl break-words text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">Precision Job Matches</h1>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-secondary">
                   Search by title, company, skills, or keywords, then refine by location, remote type, salary, and fit threshold.
                 </p>
               </div>
 
-              <Button variant="outline" onClick={() => loadJobs(filters)} disabled={isLoading} className="rounded-[1.5rem] px-6 py-3">
+              <Button variant="outline" onClick={() => loadJobs(filters)} disabled={isLoading} className="w-full rounded-[1.5rem] px-6 py-3 sm:w-auto">
                 <RefreshCcw size={16} className="mr-2" />
                 Refresh
               </Button>
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 rounded-[1.5rem] border border-border bg-[#111418] p-6">
+            <div className="mt-6 flex flex-col gap-3 rounded-[1.5rem] border border-border bg-[#111418] p-4 sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-sm shadow-black/20">
                   <SlidersHorizontal size={18} />
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-white">Search and filters</CardTitle>
+                  <CardTitle className="text-lg text-white sm:text-xl">Search and filters</CardTitle>
                   <CardContent>Deterministic filters keep the list stable and match-aware.</CardContent>
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function Jobs() {
                       type="button"
                       variant="outline"
                       onClick={() => setIsFiltersOpen((current) => !current)}
-                      className="min-w-[148px] justify-center rounded-[1.5rem]"
+                    className="w-full justify-center rounded-[1.5rem] sm:w-auto sm:min-w-[148px]"
                     >
                       Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
                       <ChevronDown
@@ -210,7 +210,7 @@ export default function Jobs() {
                       />
                     </Button>
 
-                    <Button type="submit" variant="primary" className="rounded-[1.5rem]">
+                    <Button type="submit" variant="primary" className="w-full rounded-[1.5rem] sm:w-auto">
                       Apply Filters
                     </Button>
                   </div>
@@ -354,7 +354,7 @@ export default function Jobs() {
             return (
               <div
                 key={job._id}
-                className="group grid cursor-pointer gap-6 border-b border-white/10 p-8 transition duration-200 last:border-b-0 hover:bg-[#14161b] lg:grid-cols-[92px_1fr_auto] lg:items-center"
+                className="group grid cursor-pointer gap-5 border-b border-white/10 p-4 transition duration-200 last:border-b-0 hover:bg-[#14161b] sm:p-6 lg:grid-cols-[92px_1fr_auto] lg:items-center lg:p-8"
                 onClick={() => navigate(`/job-match/${job._id}`)}
               >
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#17171c] text-[#ffd0cc]">
@@ -365,7 +365,7 @@ export default function Jobs() {
                     {matchScore > 0 && <span className="text-accent">{matchScore}% Match</span>}
                     <span>Posted recently</span>
                   </div>
-                  <h3 className="max-w-xl text-2xl font-semibold transition group-hover:text-primary text-white">{job.title}</h3>
+                  <h3 className="max-w-xl break-words text-xl font-semibold text-white transition group-hover:text-primary sm:text-2xl">{job.title}</h3>
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-base text-secondary">
                     <span>{job.company}</span>
                     <span>•</span>
@@ -407,7 +407,7 @@ export default function Jobs() {
                   </button>
                   <div onClick={(event) => event.stopPropagation()}>
                     <Button variant="primary" className="rounded-full px-5 py-3" onClick={() => navigate(`/job-match/${job._id}`)}>
-                      Apply with AI
+                      Apply
                     </Button>
                   </div>
                 </div>

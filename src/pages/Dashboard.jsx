@@ -134,28 +134,28 @@ export default function Dashboard() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen page-shell text-foreground px-6 py-10 lg:px-8">
+      <div className="min-h-screen page-shell text-foreground px-0 py-0 sm:px-2 sm:py-2 lg:px-0">
         <div className="mx-auto max-w-7xl space-y-10">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-3 rounded-3xl border border-white/10 bg-[#121318] px-4 py-2 text-sm text-secondary">
                 <div className="h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_0_8px_rgba(73,215,202,0.08)]" />
-                Live Intelligence Active
+                Resume profile synced
               </div>
-              <h1 className="mt-6 text-5xl font-bold tracking-tight text-white">
+              <h1 className="mt-6 break-words text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Welcome,&nbsp;
                 <span className="text-amber-400">{user?.name || 'Sonu Yadav'}</span>
               </h1>
-              <p className="mt-4 max-w-4xl text-xl leading-8 text-secondary">
-                Your career intelligence is synced. We&apos;ve identified {matches.length + 2} new high-compatibility matches in the London fintech sector since your last login.
+              <p className="mt-4 max-w-4xl text-base leading-7 text-secondary sm:text-lg lg:text-xl lg:leading-8">
+                Your profile is synced. We&apos;ve identified {matches.length + 2} new high-compatibility matches in the London fintech sector since your last login.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline" onClick={fetchDashboardData} disabled={isLoading} className="rounded-[1.5rem] px-6 py-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
+              <Button variant="outline" onClick={fetchDashboardData} disabled={isLoading} className="w-full rounded-[1.5rem] px-6 py-3 sm:w-auto">
                 <RefreshCcw size={16} className="mr-2" />
                 Refresh
               </Button>
-              <Button variant="primary" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="rounded-[1.5rem] px-6 py-3">
+              <Button variant="primary" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="w-full rounded-[1.5rem] px-6 py-3 sm:w-auto">
                 <Upload size={16} className="mr-2" />
                 {isUploading ? 'Uploading...' : 'Upload Resume'}
               </Button>
@@ -171,16 +171,16 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_400px]">
-        <section className="rounded-[2rem] border border-white/10 bg-[#101214]/95 p-8 shadow-[0_28px_70px_rgba(0,0,0,0.24)]">
+        <section className="rounded-2xl border border-white/10 bg-[#101214]/95 p-4 shadow-[0_28px_70px_rgba(0,0,0,0.24)] sm:p-6 lg:rounded-[2rem] lg:p-8">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="mb-3 text-xs uppercase tracking-[0.24em] text-secondary">ATS Optimization Intelligence</div>
-              <h2 className="text-3xl font-semibold text-white">Intelligent Role Fit</h2>
+              <div className="mb-3 text-xs uppercase tracking-[0.18em] text-secondary sm:tracking-[0.24em]">ATS optimization</div>
+              <h2 className="text-2xl font-semibold text-white sm:text-3xl">Role Fit</h2>
               <p className="mt-2 text-base text-secondary">Target: Senior Director of Product (Global Payments)</p>
             </div>
-            <div className="rounded-[1.5rem] bg-[#111417] px-6 py-4 text-right shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
-              <div className="text-5xl font-semibold text-accent">{score}%</div>
-              <div className="text-sm uppercase tracking-[0.24em] text-secondary">Compatibility</div>
+            <div className="rounded-[1.5rem] bg-[#111417] px-5 py-4 text-left shadow-[0_12px_30px_rgba(0,0,0,0.18)] sm:text-right">
+              <div className="text-4xl font-semibold text-accent sm:text-5xl">{score}%</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-secondary sm:text-sm sm:tracking-[0.24em]">Compatibility</div>
             </div>
           </div>
 
@@ -216,19 +216,19 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <aside className="rounded-[2rem] border border-white/10 bg-[#101214]/95 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.22)]">
+        <aside className="rounded-2xl border border-white/10 bg-[#101214]/95 p-4 shadow-[0_24px_60px_rgba(0,0,0,0.22)] sm:p-6 lg:rounded-[2rem] lg:p-8">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-semibold text-white">Resume Health</h2>
+              <h2 className="text-2xl font-semibold text-white sm:text-3xl">Resume Health</h2>
               <p className="mt-2 text-sm text-secondary">Executive-grade summary of your resume strength.</p>
             </div>
-            <div className="rounded-full border border-white/10 bg-[#111417] px-3 py-2 text-xs uppercase tracking-[0.28em] text-secondary">Live</div>
+            <div className="rounded-full border border-white/10 bg-[#111417] px-3 py-2 text-xs uppercase tracking-[0.18em] text-secondary">Updated</div>
           </div>
 
-          <div className="relative mx-auto my-10 flex h-56 w-56 items-center justify-center rounded-full border-8 border-[#2f3431] shadow-[0_12px_36px_rgba(0,0,0,0.18)]">
+          <div className="relative mx-auto my-8 flex h-44 w-44 items-center justify-center rounded-full border-8 border-[#2f3431] shadow-[0_12px_36px_rgba(0,0,0,0.18)] sm:my-10 sm:h-56 sm:w-56">
             <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top_left,rgba(73,215,202,0.15),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(182,79,82,0.12),transparent_35%)]" />
             <div className="relative text-center">
-              <div className="text-6xl font-bold text-white">{score}</div>
+              <div className="text-5xl font-bold text-white sm:text-6xl">{score}</div>
               <div className="text-sm uppercase tracking-[0.24em] text-secondary">Score</div>
             </div>
           </div>
@@ -249,13 +249,13 @@ export default function Dashboard() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-semibold text-white">Career Assistant</h3>
-                <p className="mt-1 text-sm text-secondary">Launch AI career guidance or clear your resume data.</p>
+                <p className="mt-1 text-sm text-secondary">Launch career guidance or clear your resume data.</p>
               </div>
             </div>
             <div className="mt-6 flex flex-col gap-3">
               <Button variant="secondary" onClick={() => navigate('/interview-prep')} className="w-full rounded-[1.5rem] px-6 py-4">
                 <BrainCircuit size={18} className="mr-2" />
-                Ask Career AI
+                Ask Career Assistant
               </Button>
               {resume && (
                 <Button
@@ -279,30 +279,30 @@ export default function Dashboard() {
       <section>
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold text-white">Precision Job Matches</h2>
+            <h2 className="text-2xl font-semibold text-white sm:text-3xl">Precision Job Matches</h2>
             <p className="mt-2 text-sm text-secondary">Curated opportunities tailored to your profile and ATS readiness.</p>
           </div>
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-[#111417] px-4 py-2 text-sm text-secondary">
-            <span className="rounded-full bg-[#161a1f] px-3 py-1 uppercase tracking-[0.22em]">Remote only</span>
-            <span className="rounded-full bg-[#161a1f] px-3 py-1 uppercase tracking-[0.22em]">All tiers</span>
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-[#111417] px-3 py-2 text-sm text-secondary sm:rounded-full sm:px-4">
+            <span className="rounded-full bg-[#161a1f] px-3 py-1 uppercase tracking-[0.16em]">Remote only</span>
+            <span className="rounded-full bg-[#161a1f] px-3 py-1 uppercase tracking-[0.16em]">All tiers</span>
           </div>
         </div>
         <div className="space-y-4">
           {matches.map((job) => (
-            <div key={job._id} className="grid gap-6 rounded-[1.5rem] border border-white/10 bg-[#101214]/95 p-8 shadow-[0_18px_40px_rgba(0,0,0,0.16)] lg:grid-cols-[92px_1fr_auto] lg:items-center">
+            <div key={job._id} className="grid gap-5 rounded-[1.5rem] border border-white/10 bg-[#101214]/95 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.16)] sm:p-6 lg:grid-cols-[92px_1fr_auto] lg:items-center lg:p-8">
               <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[#17191d] text-[#ffd0cc]">
                 <Landmark size={34} />
               </div>
               <div>
                 <div className="mb-3 text-xs uppercase tracking-[0.24em] text-accent">{job.matchScore?.matchPercentage || 92}% Match</div>
-                <h3 className="text-2xl font-semibold text-white">{job.title}</h3>
+                <h3 className="break-words text-xl font-semibold text-white sm:text-2xl">{job.title}</h3>
                 <p className="mt-2 text-base text-secondary">{job.company} • {job.location}</p>
               </div>
-              <div className="flex flex-wrap items-center gap-3 justify-end">
+              <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                 {(job.requiredSkills || []).slice(0, 2).map((skill) => <span key={skill} className="rounded-full border border-white/10 bg-[#14161a] px-4 py-2 text-sm text-secondary">{skill}</span>)}
                 <Bookmark className="text-secondary" />
                 <Button variant="primary" className="rounded-full px-5 py-3" onClick={() => job._id.startsWith('demo') ? navigate('/jobs') : navigate(`/job-match/${job._id}`)}>
-                  Apply with AI
+                  Apply
                 </Button>
               </div>
             </div>

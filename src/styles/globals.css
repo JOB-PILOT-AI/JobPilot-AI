@@ -33,10 +33,12 @@ html {
   min-height: 100%;
   background: var(--background);
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100%;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 12% 15%, rgba(93, 158, 218, 0.14), transparent 28rem),
     radial-gradient(circle at 85% 8%, rgba(74, 222, 128, 0.1), transparent 26rem),
@@ -78,6 +80,23 @@ body {
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
 }
 
+.page-shell,
+.page-panel,
+.page-card,
+.glass-panel,
+.jp-card,
+.jp-panel,
+.jp-dark-panel {
+  min-width: 0;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
 .glass-panel {
   background: rgba(10, 11, 14, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -97,6 +116,7 @@ input,
 textarea,
 select {
   font: inherit;
+  max-width: 100%;
 }
 
 button {
@@ -184,6 +204,18 @@ button:disabled {
   .interview-response-panel {
     border-left: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    background: linear-gradient(180deg, rgba(5, 7, 10, 0.98), rgba(12, 15, 21, 1));
+  }
+
+  .page-panel,
+  .glass-panel,
+  .page-card {
+    border-radius: 1rem;
   }
 }
 
